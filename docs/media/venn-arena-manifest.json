@@ -1,0 +1,647 @@
+{
+  "purpose": "112-second video of the arena application: the memory player, then the head compiled from its memory; built from recorded decisions",
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "seconds": 112,
+    "video": "H.264",
+    "audio": "AAC stereo"
+  },
+  "segments": [
+    {
+      "name": "title",
+      "start": 0,
+      "end": 3
+    },
+    {
+      "name": "empty",
+      "start": 3,
+      "end": 10
+    },
+    {
+      "name": "tease",
+      "start": 10,
+      "end": 18
+    },
+    {
+      "name": "montage",
+      "start": 18,
+      "end": 28
+    },
+    {
+      "name": "mechanic",
+      "start": 28,
+      "end": 41
+    },
+    {
+      "name": "api",
+      "start": 41,
+      "end": 47
+    },
+    {
+      "name": "finale",
+      "start": 47,
+      "end": 60
+    },
+    {
+      "name": "head_api",
+      "start": 60,
+      "end": 68
+    },
+    {
+      "name": "head",
+      "start": 68,
+      "end": 86
+    },
+    {
+      "name": "speed",
+      "start": 86,
+      "end": 92
+    },
+    {
+      "name": "results",
+      "start": 92,
+      "end": 102
+    },
+    {
+      "name": "end",
+      "start": 102,
+      "end": 112
+    }
+  ],
+  "footage": {
+    "empty": {
+      "what": "evaluation episode 1 with an empty memory (wiped run)",
+      "decisions": 90,
+      "tics": 360,
+      "kills": 1,
+      "seed": 2011102026
+    },
+    "trained": {
+      "what": "evaluation episode 1 with the memory after 431,173 decisions",
+      "decisions": 111,
+      "tics": 442,
+      "kills": 5,
+      "seed": 2011102026
+    },
+    "hero": {
+      "what": "scored episode 8 of 50 with the same memory, used for the finale",
+      "decisions": 145,
+      "tics": 580,
+      "kills": 6,
+      "seed": 2011172075
+    },
+    "head": {
+      "what": "scored head-only game 5 of 50 for memory seed 4 (Phase 11c AWR head, no memory lookup)",
+      "decisions": 191,
+      "tics": 762,
+      "kills": 13,
+      "seed": 2051142054,
+      "rerun": "all 50 games of that evaluation re-run through the same service; every kill count, score and tic count matched the recorded evaluation (mean 8.60)",
+      "head_sha256": "6991e97ea398720dc789a55ae67fbdf7e2e6d83a179d6f0c1271bd2f51eb6f0f",
+      "choice": "game 5 of 50: 13 kills with all 26 rounds used by 17 s and no left-right oscillation; the 15-kill game 16 oscillated for five seconds and stood out of ammo for five more"
+    },
+    "playback": {
+      "empty": [
+        {
+          "video_start": 3.0,
+          "clip_start": 0.0,
+          "seconds": 7.0
+        }
+      ],
+      "tease": [
+        {
+          "video_start": 10.0,
+          "clip_start": 0.0,
+          "seconds": 8.0
+        }
+      ],
+      "finale": [
+        {
+          "video_start": 47.0,
+          "clip_start": 0.0,
+          "seconds": 6.0
+        },
+        {
+          "video_start": 53.0,
+          "clip_start": null,
+          "seconds": 7.0
+        }
+      ],
+      "head": [
+        {
+          "video_start": 68.0,
+          "clip_start": 0.0,
+          "seconds": 18.0
+        }
+      ]
+    },
+    "production": "tic-by-tic ViZDoom replay of the recorded actions; every decision-boundary frame hash and the terminal kills/score were verified; the finale contains one jump cut; the head round is shown continuously from its start and ends after the last kill, before the player stands out of ammo",
+    "montage": "24 recorded composite snapshots of all 128 training games, cross-faded; the decision counter interpolates between snapshot counts; baked-in green borders on eight cells replaced by extension of their interior edges"
+  },
+  "numbers": [
+    {
+      "screen": "94.7 decisions a second",
+      "value": 94.67401074945334,
+      "meaning": "median warm full-loop rate on one A100 with 128 games"
+    },
+    {
+      "screen": "1.35 s per batch of 128 screens",
+      "value": 1.3520077895373106,
+      "meaning": "median batch time; not single-screen latency"
+    },
+    {
+      "screen": "431,173 decisions",
+      "value": 431173
+    },
+    {
+      "screen": "This round finishes with 6 kills.",
+      "value": 6,
+      "meaning": "one recorded episode, not a kill limit or an average"
+    },
+    {
+      "screen": "This round finishes with 13 kills.",
+      "value": 13,
+      "meaning": "one of the 50 scored head-only games for that memory, chosen for smooth play; the best of the 50 scored 15 and the mean is in footage.head.rerun"
+    },
+    {
+      "screen": "8.4 / 6.2 / 4.9 / 1.3 average kills",
+      "value": [
+        8.364,
+        6.172,
+        4.944000000000001,
+        1.308
+      ],
+      "meaning": "head: Phase 11c, five memories x 50 games, heads and memories frozen; memory, pixels and random: earlier five-run study (Phase 10c), 50 games per run, in kills; the Phase 11c same-day memory control measured 6.20"
+    },
+    {
+      "screen": "The memory it learned from averaged 6.2.",
+      "value": 6.2,
+      "meaning": "same-day memory-only control of the five Phase 11c memories; the earlier study measured 6.17"
+    },
+    {
+      "screen": "49,000 parameters, 200 kilobytes",
+      "value": [
+        49153,
+        199694
+      ],
+      "meaning": "rank-16 bilinear head with 768-d text option vectors; file size of the saved head"
+    },
+    {
+      "screen": "head minus memory",
+      "value": {
+        "estimate": 2.1639999999999993,
+        "ci95": [
+          1.54,
+          2.9479999999999995
+        ],
+        "per_seed": [
+          2.419999999999999,
+          3.5999999999999996,
+          1.5200000000000005,
+          1.38,
+          1.8999999999999995
+        ]
+      },
+      "meaning": "paired seed-cluster bootstrap over the five memories"
+    },
+    {
+      "screen": "Learning curve",
+      "meaning": "online greedy averages across the five earlier runs, not frozen evaluations"
+    },
+    {
+      "screen": "Similar-moment scores",
+      "meaning": "recorded utilities of one exact-match case per move, rounded; not kill counts"
+    }
+  ],
+  "audio": {
+    "effects": "Freedoom sound lumps from freedoom2.wad placed at the replayed shot, kill and damage tics",
+    "music": "generated upbeat synth score (128 BPM, A minor: kick, bass, arpeggio, lead, claps, hats); no third-party music",
+    "events": [
+      [
+        "shot",
+        3.6
+      ],
+      [
+        "shot",
+        4.0
+      ],
+      [
+        "shot",
+        4.4
+      ],
+      [
+        "shot",
+        4.8
+      ],
+      [
+        "shot",
+        5.771
+      ],
+      [
+        "shot",
+        6.171
+      ],
+      [
+        "shot",
+        6.571
+      ],
+      [
+        "shot",
+        7.143
+      ],
+      [
+        "shot",
+        7.943
+      ],
+      [
+        "shot",
+        8.343
+      ],
+      [
+        "kill",
+        8.343
+      ],
+      [
+        "shot",
+        8.743
+      ],
+      [
+        "shot",
+        9.143
+      ],
+      [
+        "shot",
+        10.314
+      ],
+      [
+        "kill",
+        10.314
+      ],
+      [
+        "shot",
+        10.714
+      ],
+      [
+        "shot",
+        11.4
+      ],
+      [
+        "shot",
+        12.086
+      ],
+      [
+        "shot",
+        13.229
+      ],
+      [
+        "shot",
+        13.629
+      ],
+      [
+        "kill",
+        13.629
+      ],
+      [
+        "shot",
+        14.257
+      ],
+      [
+        "shot",
+        14.829
+      ],
+      [
+        "shot",
+        15.371
+      ],
+      [
+        "kill",
+        15.371
+      ],
+      [
+        "shot",
+        15.914
+      ],
+      [
+        "shot",
+        16.314
+      ],
+      [
+        "shot",
+        16.857
+      ],
+      [
+        "shot",
+        17.257
+      ],
+      [
+        "shot",
+        17.8
+      ],
+      [
+        "shot",
+        47.314
+      ],
+      [
+        "kill",
+        47.314
+      ],
+      [
+        "shot",
+        47.857
+      ],
+      [
+        "shot",
+        48.514
+      ],
+      [
+        "shot",
+        48.914
+      ],
+      [
+        "shot",
+        49.314
+      ],
+      [
+        "shot",
+        49.857
+      ],
+      [
+        "shot",
+        50.257
+      ],
+      [
+        "shot",
+        50.657
+      ],
+      [
+        "shot",
+        51.2
+      ],
+      [
+        "kill",
+        51.2
+      ],
+      [
+        "shot",
+        51.943
+      ],
+      [
+        "kill",
+        51.943
+      ],
+      [
+        "shot",
+        52.857
+      ],
+      [
+        "shot",
+        53.171
+      ],
+      [
+        "kill",
+        53.171
+      ],
+      [
+        "shot",
+        53.743
+      ],
+      [
+        "shot",
+        54.143
+      ],
+      [
+        "shot",
+        54.543
+      ],
+      [
+        "kill",
+        54.543
+      ],
+      [
+        "shot",
+        56.029
+      ],
+      [
+        "shot",
+        56.571
+      ],
+      [
+        "shot",
+        56.971
+      ],
+      [
+        "shot",
+        57.514
+      ],
+      [
+        "shot",
+        58.543
+      ],
+      [
+        "kill",
+        58.543
+      ],
+      [
+        "shot",
+        68.314
+      ],
+      [
+        "kill",
+        68.314
+      ],
+      [
+        "shot",
+        68.714
+      ],
+      [
+        "shot",
+        69.4
+      ],
+      [
+        "kill",
+        69.4
+      ],
+      [
+        "shot",
+        70.086
+      ],
+      [
+        "shot",
+        71.114
+      ],
+      [
+        "shot",
+        71.514
+      ],
+      [
+        "kill",
+        71.514
+      ],
+      [
+        "shot",
+        71.914
+      ],
+      [
+        "shot",
+        72.314
+      ],
+      [
+        "shot",
+        72.857
+      ],
+      [
+        "shot",
+        73.257
+      ],
+      [
+        "kill",
+        73.257
+      ],
+      [
+        "shot",
+        73.8
+      ],
+      [
+        "kill",
+        73.8
+      ],
+      [
+        "shot",
+        74.343
+      ],
+      [
+        "kill",
+        74.343
+      ],
+      [
+        "shot",
+        75.571
+      ],
+      [
+        "kill",
+        75.571
+      ],
+      [
+        "shot",
+        75.971
+      ],
+      [
+        "kill",
+        75.971
+      ],
+      [
+        "shot",
+        78.314
+      ],
+      [
+        "shot",
+        78.714
+      ],
+      [
+        "kill",
+        78.714
+      ],
+      [
+        "shot",
+        79.114
+      ],
+      [
+        "shot",
+        79.514
+      ],
+      [
+        "shot",
+        79.914
+      ],
+      [
+        "kill",
+        79.914
+      ],
+      [
+        "shot",
+        81.514
+      ],
+      [
+        "shot",
+        81.914
+      ],
+      [
+        "shot",
+        82.886
+      ],
+      [
+        "shot",
+        83.286
+      ],
+      [
+        "shot",
+        84.143
+      ],
+      [
+        "kill",
+        84.143
+      ],
+      [
+        "shot",
+        84.543
+      ],
+      [
+        "kill",
+        84.543
+      ],
+      [
+        "shot",
+        84.943
+      ],
+      [
+        "kill",
+        84.943
+      ],
+      [
+        "slow_shot",
+        35.257
+      ],
+      [
+        "slow_shot",
+        36.857
+      ],
+      [
+        "slow_shot",
+        39.6
+      ]
+    ]
+  },
+  "trained": {
+    "reader": false,
+    "head": "one rank-16 bilinear head (49,153 parameters) fitted from the memory with the advantage-weighted imitation objective; nothing else"
+  },
+  "validation": {
+    "frames": 3360,
+    "duration": 112.0,
+    "text_safe_area_checked_every_frame": true
+  },
+  "deliverables": {
+    "venn-arena.mp4": {
+      "sha256": "9f22883cb809f8a7908876398808db198706a3d8f5872abc2ce9b5fdcf82861b",
+      "bytes": 38751289
+    },
+    "venn-arena-poster.jpg": {
+      "sha256": "9d7717f21705cab753d6db693295c911ec5bace9facf2dd6932167bfa5e40e27",
+      "bytes": 230922
+    },
+    "venn-arena-storyboard.png": {
+      "sha256": "0aa1db1227196805a4eb7e27a7c4ea51aaa216b7f2979ea78fd3389959cf7b72",
+      "bytes": 455039
+    },
+    "venn-arena-captions.srt": {
+      "sha256": "3b668f9a902f21cc01657eaef1c4f22e31323e06245dd1cce920edfdfc7e8798",
+      "bytes": 2121
+    },
+    "venn-arena-captions.vtt": {
+      "sha256": "2fab5c103861514d8cc51400129bcd7fbd6f1f319dac0f7b483718d6a6d5cc67",
+      "bytes": 2066
+    }
+  }
+}

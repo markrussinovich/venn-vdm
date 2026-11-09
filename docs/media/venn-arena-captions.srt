@@ -1,0 +1,95 @@
+1
+00:00:03,000 --> 00:00:07,000
+It has never played before, so it moves at random.
+
+2
+00:00:07,000 --> 00:00:10,000
+When a game ends, what happened is saved to a shared memory.
+
+3
+00:00:10,000 --> 00:00:14,000
+The same level and starting position, after 431,173 decisions.
+
+4
+00:00:14,000 --> 00:00:18,000
+Every move now comes from what earlier games remembered.
+
+5
+00:00:18,000 --> 00:00:23,000
+128 games play at once and write to the same memory.
+
+6
+00:00:23,000 --> 00:00:28,000
+The curve follows eight games that always choose the best-scoring move.
+
+7
+00:00:28,000 --> 00:00:32,000
+Venn embeds each screen with EmbeddingGemma 2 and looks up similar moments.
+
+8
+00:00:32,000 --> 00:00:35,500
+For each move, it averages how those moments turned out.
+
+9
+00:00:35,500 --> 00:00:41,000
+At quarter speed: it returns the move with the best record, and the game plays it.
+
+10
+00:00:41,000 --> 00:00:44,000
+The game client makes one call for a batch of 128 screens.
+
+11
+00:00:44,000 --> 00:00:47,000
+The game owns the memory store, and Venn reads it through an adapter.
+
+12
+00:00:47,000 --> 00:00:52,000
+Another recorded round with the same memory.
+
+13
+00:00:55,000 --> 00:01:00,000
+This round finishes with 6 kills.
+
+14
+00:01:00,000 --> 00:01:04,000
+One more call compiles the memory into a small head.
+
+15
+00:01:04,000 --> 00:01:08,000
+The head has 49,000 parameters and fits in 200 kilobytes.
+
+16
+00:01:08,000 --> 00:01:11,500
+Same level, with the memory switched off.
+
+17
+00:01:11,500 --> 00:01:15,000
+The head alone picks every move.
+
+18
+00:01:20,500 --> 00:01:26,000
+This round finishes with 13 kills.
+
+19
+00:01:26,000 --> 00:01:32,000
+The whole loop, including the game itself, runs on one GPU.
+
+20
+00:01:32,000 --> 00:01:36,000
+Across 250 scored games, the head averaged 8.4 kills per game.
+
+21
+00:01:36,000 --> 00:01:39,000
+The memory it learned from averaged 6.2.
+
+22
+00:01:39,000 --> 00:01:42,000
+A memory of raw pixels averaged 4.9, and random moves averaged 1.3.
+
+23
+00:01:42,000 --> 00:01:45,000
+The embedding model is pretrained and frozen.
+
+24
+00:01:45,000 --> 00:01:48,000
+The head is the only trained part.

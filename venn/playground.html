@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Venn local playground</title>
+<style>
+body { max-width: 56rem; margin: 2rem auto; padding: 1rem; font: 16px system-ui; }
+textarea { display: block; width: 100%; min-height: 7rem; margin: .5rem 0 1rem; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #eee; padding: 1rem; }
+</style>
+<h1>Venn local playground</h1>
+<p><a href="/guide/">Documentation and benchmark</a></p>
+<p>Research prototype. No calibration, privacy or guardrail guarantee.
+Only the configured local server receives your input. No external API is called by this page.</p>
+<h2>Space-level decisions</h2>
+<p>Examples below use disclosed synthetic 768-dimensional vectors, not text embeddings
+or evidence of semantic accuracy. Upload your own pinned-profile vectors to try a real store.</p>
+<p><button type="button" data-space="nearest">Nearest labeled reference</button>
+<button type="button" data-space="membership">Find the outlier</button>
+<button type="button" data-space="shift">Compare populations</button>
+<button type="button" data-space="sweep">Stream indexed decisions</button></p>
+<label for="store">Local JSON store: {"vectors": [...], "ids": [...], "outcomes": [...]}</label>
+<input id="store" type="file" accept=".json,application/json">
+<p id="store-status">No uploaded store. Examples create an ephemeral synthetic store.</p>
+<h2>Per-item Decisions request</h2>
+<form id="form">
+<label for="state">State (JSON string, object, array, or explicit vector)</label>
+<textarea id="state">"I cannot sign in to my account"</textarea>
+<label for="questions">Named Decisions questions</label>
+<textarea id="questions">{
+  "team": {
+    "type": "choice",
+    "instructions": "Who owns this ticket?",
+    "criteria": {"account": "Login or access", "billing": "Payments or refunds"}
+  }
+}</textarea>
+<label><input id="media" type="checkbox"> Explicitly opt into experimental media</label>
+<p><button>Run local decision</button></p>
+</form>
+<pre id="result" aria-live="polite">Ready. Raw text requires a separately downloaded pinned reader.</pre>
+<script type="module">
+const result = document.querySelector("#result");
+const basis = axis => Array.from({length: 768}, (_, i) => Number(i === axis));
+let uploaded = null;
+async function post(path, body) {
+  const response = await fetch(path, {method: "POST",
+    headers: {"content-type": "application/json"}, body: JSON.stringify(body)});
+  if (!response.ok) throw new Error(await response.text());
+  return response;
+}
+document.querySelector("#store").addEventListener("change", async event => {
+  try {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 7000000) throw new Error("Use a store below 7 MB in this browser demo.");
+    const value = JSON.parse(await file.text());
+    uploaded = await (await post("/indexes", value)).json();
+    document.querySelector("#store-status").textContent = `Registered ${value.ids.length} rows; ephemeral local handle ${uploaded.index_ref}`;
+  } catch (error) {
+    result.textContent = String(error);
+  }
+});
+document.querySelectorAll("[data-space]").forEach(button => button.addEventListener("click", async () => {
+  try {
+    result.textContent = "Running local space-level request...";
+    const action = button.dataset.space;
+    let response;
+    if (action === "nearest" || action === "sweep") {
+      const store = uploaded ?? await (await post("/indexes", {
+        vectors: Array.from({length: 32}, (_, i) => basis(i % 3)),
+        ids: Array.from({length: 32}, (_, i) => `synthetic-${i}`),
+        outcomes: Array.from({length: 32}, (_, i) => ["account", "billing", "shipping"][i % 3])
+      })).json();
+      if (action === "sweep") {
+        response = await post(`/index-apply/${store.index_ref}`, {
+          type: "index_apply", instructions_vec: basis(0),
+          options: [0, 1, 2].map(i => ({label: ["account", "billing", "shipping"][i], vector: basis(i)})),
+          batch_size: 8, row_cap: 128
+        });
+        const reader = response.body.getReader(), decoder = new TextDecoder();
+        result.textContent = "";
+        for (;;) {
+          const {value, done} = await reader.read();
+          if (done) break;
+          result.textContent += decoder.decode(value, {stream: true});
+        }
+        result.textContent += decoder.decode();
+        return;
+      }
+      response = await post("/api/alpha/decisions", {
+        model: "venn-1", state: {vector: basis(0)},
+        questions: {nearest: {type: "nearest_reference", index_ref: store.index_ref}}
+      });
+    } else {
+      const vectors = action === "membership" ?
+        [...Array.from({length: 7}, () => basis(0)), basis(1)] :
+        Array.from({length: 48}, () => basis(0));
+      const question = action === "membership" ?
+        {type: "set_membership", method: "knn5"} :
+        {type: "population_shift", batch_b: Array.from({length: 48}, () => basis(1))};
+      response = await post("/api/alpha/decisions", {
+        model: "venn-1", state: {vectors}, questions: {space: question}
+      });
+    }
+    result.textContent = JSON.stringify(await response.json(), null, 2);
+  } catch (error) {
+    result.textContent = String(error);
+  }
+}));
+document.querySelector("#form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const result = document.querySelector("#result");
+  try {
+    const body = { model: "venn-1",
+      state: JSON.parse(document.querySelector("#state").value),
+      questions: JSON.parse(document.querySelector("#questions").value) };
+    const headers = { "content-type": "application/json" };
+    if (document.querySelector("#media").checked) headers["X-Venn-Experimental"] = "media";
+    const response = await fetch("/api/alpha/decisions",
+      { method: "POST", headers, body: JSON.stringify(body) });
+    result.textContent = JSON.stringify(await response.json(), null, 2);
+  } catch (error) {
+    result.textContent = String(error);
+  }
+});
+</script>
+</html>

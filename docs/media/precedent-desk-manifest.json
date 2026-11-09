@@ -1,0 +1,260 @@
+{
+  "purpose": "Precedent Desk video recorded from the live example app; every accuracy on screen is read from eval.py results",
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "seconds": 154.17620441131294,
+    "video": "H.264",
+    "audio": "none"
+  },
+  "segments": [
+    {
+      "name": "both counters, no history",
+      "start": 0,
+      "end": 36
+    },
+    {
+      "name": "attach history",
+      "start": 36,
+      "end": 76
+    },
+    {
+      "name": "one embedding, several questions",
+      "start": 76,
+      "end": 100
+    },
+    {
+      "name": "both sweeps",
+      "start": 100,
+      "end": 134
+    },
+    {
+      "name": "negation and the composition rule",
+      "start": 134,
+      "end": 154.17620441131294
+    }
+  ],
+  "captions": [
+    {
+      "start": 6.96,
+      "end": 11.97,
+      "text": "A ticket arrives. Jev reads it and routes it."
+    },
+    {
+      "start": 11.97,
+      "end": 20.99,
+      "text": "Venn, with no history, is given plain descriptions of the 77 queues and routes the same ticket."
+    },
+    {
+      "start": 20.99,
+      "end": 28.99,
+      "text": "Scored on the same 3,080 tickets: Jev 79.7%, Venn without history 69.0%. On day one, use Jev."
+    },
+    {
+      "start": 28.99,
+      "end": 35.6,
+      "text": "Neither has seen one of this desk's tickets yet."
+    },
+    {
+      "start": 35.6,
+      "end": 41.7,
+      "text": "Attach the desk's closed tickets. Nothing is trained; the store is pointed at."
+    },
+    {
+      "start": 41.7,
+      "end": 51.22,
+      "text": "Every answer now comes with the precedents it used, and how each was resolved."
+    },
+    {
+      "start": 51.22,
+      "end": 65.75,
+      "text": "The counter moves to 93.6%."
+    },
+    {
+      "start": 65.75,
+      "end": 75.91,
+      "text": "Five resolved tickets per queue already clear the decision model's interval on this desk; on CLINC150 it takes fifty."
+    },
+    {
+      "start": 75.91,
+      "end": 88.59,
+      "text": "One embedding of the ticket. From it: the queue, the three precedents, and whether it belongs in the queue it landed in."
+    },
+    {
+      "start": 88.59,
+      "end": 99.7,
+      "text": "A ticket a legacy rule filed in the wrong queue: the same vector, one more question, and set_membership flags it."
+    },
+    {
+      "start": 99.7,
+      "end": 112.84,
+      "text": "The registered question, affected by the FX-fee change or not, at threshold 0.9: 5% precision and 9,505 tickets sent to review."
+    },
+    {
+      "start": 112.84,
+      "end": 122.84,
+      "text": "Re-tag the whole backlog with the 77 queues and file the two FX queues: 361 tickets, 98% precision, 99% recall, 1.9 seconds in process."
+    },
+    {
+      "start": 122.84,
+      "end": 133.99,
+      "text": "A sweep is as good as its question. The queues the desk already has are the better question."
+    },
+    {
+      "start": 133.99,
+      "end": 138.99,
+      "text": "\u201cI was NOT charged twice. One charge, but my statement shows two lines.\u201d"
+    },
+    {
+      "start": 138.99,
+      "end": 144.99,
+      "text": "Venn's precedents say duplicate charge. Jev reads the negation."
+    }
+  ],
+  "numbers": {
+    "jev_matched_run": 0.7974025974025974,
+    "jev_ci95": [
+      0.7828413638428726,
+      0.8112228980406107
+    ],
+    "venn_no_history_descriptions": {
+      "accuracy": 0.6896103896103896,
+      "ci95": [
+        0.6730435653433289,
+        0.7057048286959224
+      ],
+      "ci95_row_bootstrap": [
+        0.6730519533157349,
+        0.7061688303947449
+      ]
+    },
+    "venn_zero_shot_original_names": {
+      "accuracy": 0.9207792207792208,
+      "ci95": [
+        0.9107083306342472,
+        0.9298018040829956
+      ],
+      "what": "Choice over the 77 queue names, no null criterion: the centered-cosine argmax"
+    },
+    "history_all": {
+      "accuracy": 0.936038961038961,
+      "per_draw": [
+        0.936038961038961
+      ],
+      "draws": 1,
+      "ci95_pooled": [
+        0.926948070526123,
+        0.9444805383682251
+      ],
+      "draw_spread": [
+        0.936038961038961,
+        0.936038961038961
+      ],
+      "store_rows_mean": 10003.0,
+      "store_rows": 10003,
+      "clears_jev": true
+    },
+    "history_crossover_stop": 5,
+    "clinc": {
+      "jev": {
+        "status": "measured",
+        "accuracy": 0.9108492663405958,
+        "ci95": [
+          0.9021671786889004,
+          0.9188301917889589
+        ],
+        "model": "typesafe/jev-1.13-20260917",
+        "requests": 4498,
+        "cost_usd": 0.460581324,
+        "unparsed_choices": 0,
+        "latency_ms_p50": 232.13896714150906
+      },
+      "venn_zero_shot": {
+        "accuracy": 0.6916407292129836,
+        "ci95": [
+          0.6779859041929021,
+          0.7049684969715541
+        ],
+        "ci95_row_bootstrap": [
+          0.6778512597084045,
+          0.7045464515686035
+        ],
+        "what": "Choice over the 150 in-scope intent names, no abstention option"
+      },
+      "history_stops": {
+        "5": 0.8775100044464206,
+        "10": 0.9057803468208092,
+        "20": 0.9227567807914628,
+        "50": 0.9378212538906182,
+        "all": 0.9426411738550466
+      },
+      "crossover_stop": 50
+    },
+    "sweep_registered_0.9": {
+      "hits": 1439,
+      "review": 9505,
+      "not_affected": 2139,
+      "precision": 0.05350938151494093,
+      "precision_ci95": [
+        0.04302531109742381,
+        0.06637094852330111
+      ],
+      "recall": 0.21448467966573817,
+      "recall_ci95": [
+        0.1751651578058428,
+        0.25984979151585225
+      ],
+      "hits_in_diagnostic_fx_intents": 256,
+      "hits_elsewhere": 1106,
+      "truth_in_review": 275
+    },
+    "sweep_retag_77": {
+      "hits": 361,
+      "review": 0,
+      "precision": 0.9806094182825484,
+      "precision_ci95": [
+        0.9605219023211607,
+        0.9905761475595615
+      ],
+      "recall": 0.9860724233983287,
+      "recall_ci95": [
+        0.967815908716709,
+        0.9940366897551373
+      ],
+      "hits_in_diagnostic_fx_intents": 5,
+      "in_process_seconds": 1.864845596253872,
+      "queue_accuracy_over_all_rows": 0.9793625315294657
+    },
+    "label_string_gate": {
+      "description_lower_bound": 0.6730435653433289,
+      "jev_upper_bound": 0.8112228980406107,
+      "code_accuracy": 0.006818181818181818,
+      "passed": false
+    }
+  },
+  "live_calls": "routing, precedents, set_membership and both sweeps run against the public DecisionService during the take; the Jev column shows the cached matched-run answer for stream tickets and a live OpenRouter call for the typed negation ticket",
+  "data": "Banking77 (PolyAI, CC BY 4.0) at the pinned revision; CLINC150 (clinc_oos plus) for the replication; vectors on the media-v1 release",
+  "deliverables": {
+    "venn-precedent-desk.mp4": {
+      "sha256": "974368ce5fa2c5732e7fedfade45580e0a2f393563f07fbcf384c91cc60bd7f3",
+      "bytes": 4657452
+    },
+    "venn-precedent-desk-poster.jpg": {
+      "sha256": "00ea01524fac49b83383486771febe73b3ba3566594e3af757b94b29e5e4e74b",
+      "bytes": 286847
+    },
+    "venn-precedent-desk-storyboard.png": {
+      "sha256": "fd2a3a49956cb7befdb683ecbd826c6f7673ff09f38333828092fbce56d236af",
+      "bytes": 249509
+    },
+    "venn-precedent-desk-captions.srt": {
+      "sha256": "5e101ca98555119692cb07177c324c6b3e5e5fe9d91bc1817b61208dba1aa55c",
+      "bytes": 1822
+    },
+    "venn-precedent-desk-captions.vtt": {
+      "sha256": "4e7e74e13612ac83ccedbe9ad8b8b89aeeb9c13584e7e68f2c199dbb466bb217",
+      "bytes": 1794
+    }
+  }
+}

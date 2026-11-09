@@ -1,0 +1,15 @@
+Venn
+Copyright 2026 Venn contributors
+
+Venn's original code is provided under the MIT License (see LICENSE).
+This does not license upstream datasets, trained weights or private research
+artifacts. Their terms and promotion status are tracked separately.
+
+The venn-1 reader is EmbeddingGemma 2, developed by Google DeepMind:
+https://huggingface.co/google/embeddinggemma-2
+Pinned revision: f9972ac22e696a105c482202646979e33e4b5a1e
+Reader license: Apache-2.0, as declared by its upstream model card.
+Reader weights are downloaded separately and are not redistributed here.
+
+Runtime dependencies are installed separately under their own licenses.
+See docs/licenses.md for dependency attribution and data/weight restrictions.

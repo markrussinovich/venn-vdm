@@ -1,0 +1,59 @@
+1
+00:00:06,960 --> 00:00:11,970
+A ticket arrives. Jev reads it and routes it.
+
+2
+00:00:11,970 --> 00:00:20,990
+Venn, with no history, is given plain descriptions of the 77 queues and routes the same ticket.
+
+3
+00:00:20,990 --> 00:00:28,990
+Scored on the same 3,080 tickets: Jev 79.7%, Venn without history 69.0%. On day one, use Jev.
+
+4
+00:00:28,990 --> 00:00:35,600
+Neither has seen one of this desk's tickets yet.
+
+5
+00:00:35,600 --> 00:00:41,700
+Attach the desk's closed tickets. Nothing is trained; the store is pointed at.
+
+6
+00:00:41,700 --> 00:00:51,220
+Every answer now comes with the precedents it used, and how each was resolved.
+
+7
+00:00:51,220 --> 00:01:05,750
+The counter moves to 93.6%.
+
+8
+00:01:05,750 --> 00:01:15,910
+Five resolved tickets per queue already clear the decision model's interval on this desk; on CLINC150 it takes fifty.
+
+9
+00:01:15,910 --> 00:01:28,590
+One embedding of the ticket. From it: the queue, the three precedents, and whether it belongs in the queue it landed in.
+
+10
+00:01:28,590 --> 00:01:39,700
+A ticket a legacy rule filed in the wrong queue: the same vector, one more question, and set_membership flags it.
+
+11
+00:01:39,700 --> 00:01:52,840
+The registered question, affected by the FX-fee change or not, at threshold 0.9: 5% precision and 9,505 tickets sent to review.
+
+12
+00:01:52,840 --> 00:02:02,840
+Re-tag the whole backlog with the 77 queues and file the two FX queues: 361 tickets, 98% precision, 99% recall, 1.9 seconds in process.
+
+13
+00:02:02,840 --> 00:02:13,990
+A sweep is as good as its question. The queues the desk already has are the better question.
+
+14
+00:02:13,990 --> 00:02:18,990
+“I was NOT charged twice. One charge, but my statement shows two lines.”
+
+15
+00:02:18,990 --> 00:02:24,990
+Venn's precedents say duplicate charge. Jev reads the negation.

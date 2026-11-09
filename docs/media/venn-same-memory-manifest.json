@@ -1,0 +1,352 @@
+{
+  "title": "Decisions over stored embeddings",
+  "revision": "Two-minute-thirty landscape cut; slower explanations preserved",
+  "opening_example": {
+    "state": "Please refund this charge",
+    "question": "What does the customer want?",
+    "options": [
+      "Refund",
+      "Replacement",
+      "Information"
+    ],
+    "status": "Authored schematic; the illustrative selection is not a recorded Jev or Venn prediction.",
+    "jev_reference": "https://docs.typesafe.ai/primitives/choice.md",
+    "architecture_reference": "https://docs.typesafe.ai/concepts/system-one.md"
+  },
+  "status": "Local review draft; clearances granted by owner; do not publish without explicit instruction.",
+  "narration": false,
+  "music": "Original synth score in A minor (Am-F-C-G, 118 BPM): pads, arpeggio, bass, soft kick/clap groove and a pentatonic lead that build with the sections; rising swells at cuts and in-key bell chimes for retrieval; no samples or third-party recordings.",
+  "speech_playback": false,
+  "source_narratives_or_wine_notes": false,
+  "on_screen_fine_print": false,
+  "minimum_text_size_at_1080_output": 48,
+  "layout": "Padded answer-box containment, metric-column bounds, reserved narration area and per-frame text-overlap checks",
+  "narration_style": "One cool-blue regular-weight caption block, distinct from graphic labels, without sentence-ending periods",
+  "disclosure": "On methods page only: Microsoft employee; personal research. Owner confirmed clearances on 2026-11-07; publication on hold.",
+  "animation": "Continuous 30 fps record conveyors, camera-depth motion, data morphs, retrieval trails, archive wipe and processing lanes. Slower architecture and filing-label reveals; no frozen post-intro frames.",
+  "timing": "All animation speeds are editorial, not real-time execution or measurement recordings.",
+  "pacing": "Landscape trimmed to 150 seconds by removing the 3-second summary animation and shortening the end card by 1 second; vertical remains 60 seconds. Slower architecture stages and the 10-second code highlight are unchanged.",
+  "audio_section": false,
+  "evidence": {
+    "history-eval.json": "c32631689cf74c6ecc92e28f773ee83c05aadbe8c20208ef207170e441a1fdc1",
+    "sec-eval.json": "37034936e0ed6142eca99cf07b84f424605ccc67e334a6a56397183f788c211f",
+    "wine-eval.json": "583ed6e6dcd1b8763f912c0e86481fbc336e692822c846d3b673d376c33c1121"
+  },
+  "head_execution": {
+    "file": "same-memory/head-execution.json",
+    "sha256": "81b0770a2e6fb59cabe5efeb58fba238bfc24b0d62cd8def61f052990f35d47a",
+    "source": "examples/same_memory_video/head_demo.py",
+    "source_sha256": "e253fe7079f2843e908969276b8ce73f1997eb5eb22415e3aa93a25730cea9d7",
+    "replay": "Verbatim executed source; replay compressed to fit the edit, without a real-time clock."
+  },
+  "renderer_sha256": "c4f3db85f3468b850f65a0ac41b5dd835fc576451c36b611545df6fdd7d919ff",
+  "media": [
+    {
+      "file": "venn-same-memory-review.mp4",
+      "sha256": "54ad1ca21b79323b8f78ef40d8f421baccf2536352cf108ec0b64dc06fe1ccc5",
+      "bytes": 16547056,
+      "seconds": 150,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30
+    },
+    {
+      "file": "venn-same-memory-vertical-review.mp4",
+      "sha256": "3d3e8165be02dca8d8fed7796de1f52dc7546300611afc7cf933b0a8d374aeaa",
+      "bytes": 4395562,
+      "seconds": 60,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    }
+  ],
+  "cuts": {
+    "landscape": [
+      {
+        "start": 0,
+        "end": 4,
+        "kind": "setup",
+        "card": "Both choose from answers supplied with your question"
+      },
+      {
+        "start": 4,
+        "end": 13,
+        "kind": "selection",
+        "card": "Jev returns a selected answer and its probabilities",
+        "model": "Jev"
+      },
+      {
+        "start": 13,
+        "end": 24,
+        "kind": "selection",
+        "card": "Venn scores answers using numeric representations of meaning",
+        "model": "Venn"
+      },
+      {
+        "start": 24,
+        "end": 28,
+        "kind": "history",
+        "card": "Now predict outcomes from complaints to this company",
+        "mode": "question"
+      },
+      {
+        "start": 28,
+        "end": 34,
+        "kind": "history",
+        "card": "Use Jev's label to group past outcomes",
+        "mode": "baseline"
+      },
+      {
+        "start": 34,
+        "end": 42,
+        "kind": "history",
+        "card": "Venn retrieves similar complaints with recorded outcomes",
+        "mode": "retrieve"
+      },
+      {
+        "start": 42,
+        "end": 48,
+        "kind": "history",
+        "card": "Evaluate outcome rankings on previously unseen complaints",
+        "mode": "primary"
+      },
+      {
+        "start": 48,
+        "end": 52,
+        "kind": "history",
+        "card": "Now compare only complaints requesting a refund",
+        "mode": "refund"
+      },
+      {
+        "start": 52,
+        "end": 57,
+        "kind": "history",
+        "card": "Imagine removing the complaint archive",
+        "mode": "wipe"
+      },
+      {
+        "start": 57,
+        "end": 64,
+        "kind": "sec",
+        "card": "Now learn industry labels from company filings",
+        "mode": "learn"
+      },
+      {
+        "start": 64,
+        "end": 69,
+        "kind": "sec",
+        "card": "Test both methods on the cookbook's filings",
+        "mode": "sample"
+      },
+      {
+        "start": 69,
+        "end": 75,
+        "kind": "sec",
+        "card": "Then test on additional held-out company filings",
+        "mode": "confirmation"
+      },
+      {
+        "start": 75,
+        "end": 81,
+        "kind": "sec",
+        "card": "Inspect one filing's predictions",
+        "mode": "example"
+      },
+      {
+        "start": 81,
+        "end": 89,
+        "kind": "sec",
+        "card": "Venn learns industry labels from past filings",
+        "mode": "neighbors"
+      },
+      {
+        "start": 89,
+        "end": 94,
+        "kind": "work",
+        "card": "Predict the critic's score from wine tasting notes",
+        "mode": "question"
+      },
+      {
+        "start": 94,
+        "end": 102,
+        "kind": "work",
+        "card": "Jev builds features by answering questions about notes",
+        "mode": "flow"
+      },
+      {
+        "start": 102,
+        "end": 116,
+        "kind": "code",
+        "card": "Venn fits a prediction head on stored embeddings"
+      },
+      {
+        "start": 116,
+        "end": 122,
+        "kind": "work",
+        "card": "Evaluate critic scores on previously unseen wine notes",
+        "mode": "accuracy"
+      },
+      {
+        "start": 122,
+        "end": 127,
+        "kind": "work",
+        "card": "Both learn from the same 1,200 training notes",
+        "mode": "time"
+      },
+      {
+        "start": 127,
+        "end": 134,
+        "kind": "price",
+        "card": "Price uses a different, already-stored embedding cache",
+        "mode": "question"
+      },
+      {
+        "start": 134,
+        "end": 140,
+        "kind": "price",
+        "card": "Venn's time excludes the already-completed embedding step",
+        "mode": "time"
+      },
+      {
+        "start": 140,
+        "end": 143,
+        "kind": "price",
+        "card": "Local predictions require no additional API charges",
+        "mode": "cost"
+      },
+      {
+        "start": 143,
+        "end": 147,
+        "kind": "scoreboard",
+        "card": "Additional tests favor Jev on these reading tasks"
+      },
+      {
+        "start": 147,
+        "end": 150,
+        "kind": "end",
+        "card": "Build decisions from your own data"
+      }
+    ],
+    "vertical": [
+      {
+        "start": 0,
+        "end": 4,
+        "kind": "setup",
+        "card": "Both choose from answers supplied with your question"
+      },
+      {
+        "start": 4,
+        "end": 13,
+        "kind": "selection",
+        "card": "Jev returns a selected answer and its probabilities",
+        "model": "Jev"
+      },
+      {
+        "start": 13,
+        "end": 25,
+        "kind": "selection",
+        "card": "Venn scores answers using numeric representations of meaning",
+        "model": "Venn"
+      },
+      {
+        "start": 25,
+        "end": 29,
+        "kind": "history",
+        "card": "Now predict outcomes from complaints to this company",
+        "mode": "question"
+      },
+      {
+        "start": 29,
+        "end": 36,
+        "kind": "history",
+        "card": "Use Jev's label to group past outcomes",
+        "mode": "baseline"
+      },
+      {
+        "start": 36,
+        "end": 44,
+        "kind": "history",
+        "card": "Venn retrieves similar complaints with recorded outcomes",
+        "mode": "retrieve"
+      },
+      {
+        "start": 44,
+        "end": 50,
+        "kind": "history",
+        "card": "Evaluate outcome rankings on previously unseen complaints",
+        "mode": "primary"
+      },
+      {
+        "start": 50,
+        "end": 54,
+        "kind": "history",
+        "card": "Imagine removing the complaint archive",
+        "mode": "wipe"
+      },
+      {
+        "start": 54,
+        "end": 57,
+        "kind": "history",
+        "card": "Restore those cases to make retrieval useful again",
+        "mode": "restore"
+      },
+      {
+        "start": 57,
+        "end": 60,
+        "kind": "end",
+        "card": "Build decisions from your own data"
+      }
+    ]
+  },
+  "limitations": [
+    "Owner confirmed clearances; public upload and publication remain on hold.",
+    "SEC primary gates failed; confirmation is report-only, not a win.",
+    "Wipe is conceptual; no measured empty-archive 0.50 result is claimed.",
+    "Separate historical build timings; workflow motion is illustrative. Code is an executed, compressed replay, not live footage.",
+    "Price uses cached Classification vectors, not the winning score head's SentenceSimilarity vectors.",
+    "Notebooks verify exported point estimates, not end-to-end experiments or historical timings.",
+    "Fine print and disclosures remain on the methods page at the user's request."
+  ],
+  "deliverables": {
+    "venn-same-memory-review-captions.srt": {
+      "sha256": "8895ddea35ceeae346d714bd4e50fdb480fb7965d108cac5f724c030ecf0d53f",
+      "bytes": 1991
+    },
+    "venn-same-memory-review-captions.vtt": {
+      "sha256": "af1a705f30afd7682846fd113df3f477e4c918286492a99d0a301ee7100d69d1",
+      "bytes": 1999
+    },
+    "venn-same-memory-review-poster.jpg": {
+      "sha256": "d3322af263abb6f2526fc17131a3c6267df864e88ba4622ae351731cc8beee76",
+      "bytes": 108004
+    },
+    "venn-same-memory-review-storyboard.png": {
+      "sha256": "8a2649e1b4778dd7814da3c6b4e3a5b83ce15d3669eab8cf7fc4fe127f084f7b",
+      "bytes": 763180
+    },
+    "venn-same-memory-review.mp4": {
+      "sha256": "54ad1ca21b79323b8f78ef40d8f421baccf2536352cf108ec0b64dc06fe1ccc5",
+      "bytes": 16547056
+    },
+    "venn-same-memory-vertical-review-captions.srt": {
+      "sha256": "8f0781db202d9abe112f48bc6bdf720c6cb083e9397957a6b9b4996c8e97915e",
+      "bytes": 828
+    },
+    "venn-same-memory-vertical-review-captions.vtt": {
+      "sha256": "80632cc1a0665868b6107dbd0b8e2c6b3a5d69756ddb6a3869562b5679e8bfbd",
+      "bytes": 836
+    },
+    "venn-same-memory-vertical-review-poster.jpg": {
+      "sha256": "092e73a653c3a8d171e99ae0d671ab1f196dc4bb9170c1e312db93b6f019928c",
+      "bytes": 95746
+    },
+    "venn-same-memory-vertical-review-storyboard.png": {
+      "sha256": "9bd79b2cf2452d8cd86e3fa8102078e26f433bb5c3cc8741792944e3c5f9af0d",
+      "bytes": 345659
+    },
+    "venn-same-memory-vertical-review.mp4": {
+      "sha256": "3d3e8165be02dca8d8fed7796de1f52dc7546300611afc7cf933b0a8d374aeaa",
+      "bytes": 4395562
+    }
+  }
+}

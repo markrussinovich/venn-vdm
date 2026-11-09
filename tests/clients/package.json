@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "contract": "node contract.mjs"
+  },
+  "dependencies": {
+    "@openrouter/sdk": "1.5.33",
+    "@effect/ai-openrouter": "4.1.2",
+    "effect": "4.1.2"
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "training": {
+    "photos": 80,
+    "reader_load_seconds": 3.765075732022524,
+    "embedding_seconds": 13.070896932855248,
+    "cache_hits": 0,
+    "fit_seconds": 4.909163800999522,
+    "cv_accuracy": 1.0,
+    "device": "cuda:0"
+  },
+  "evaluation": {
+    "photos": 20,
+    "correct": 20,
+    "accuracy": 1.0,
+    "embedding_ms_total": 3244.517333805561,
+    "decision_ms_total": 26.844371110200882,
+    "cache_hits": 0
+  },
+  "judgment": {
+    "name": "burger.jpg",
+    "answer": "hotdog",
+    "probabilities": {
+      "hotdog": 1.0,
+      "not_hotdog": 5.290318829804201e-22,
+      "none": 0.0
+    },
+    "calibrated": false,
+    "reader_load_seconds": 0.0,
+    "embedding_ms": 172.8334203362465,
+    "decision_ms": 1.1159442365169525,
+    "cached": false
+  },
+  "capture": {
+    "date": "2026-11-08",
+    "app_commit": "1498998",
+    "training_source": "https://d2l-data.s3-accelerate.amazonaws.com/hotdog.zip",
+    "selection": "First 40 training and first 10 test PNG/JPG filenames in sorted order per class",
+    "burger_used_for_training": false,
+    "hardware": "NVIDIA A100 80GB; reader cuda:0 float32; decision CPU",
+    "photo_source": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+    "expected": "not_hotdog",
+    "training_archive_sha256": "09bd4a15bfd4ebc402e3e434b3885228f31e96814164aed7564598d5a6eec44b",
+    "burger_sha256": "29cec38616a0e6b1094734905b804a20fc53092d3e942b1b60b88e0b90d0999f",
+    "superseded_screenshot_sha256": "a5494cc951b079628fddb23924fa8af6c98a42089b822051e9b820da4c58c4d4"
+  },
+  "investigation": {
+    "negative_class_observation": "Original 40-image and wider random negative samples visually contain banana imagery; not representative other-food negatives.",
+    "zero_shot": {
+      "Classification": {
+        "images": [
+          "burger",
+          "hotdog_control",
+          "banana_control"
+        ],
+        "descriptions": [
+          "A photo of a hot dog: a sausage in a long split bun.",
+          "A photo of a hamburger: a ground beef patty in a round bun.",
+          "A photo of bananas."
+        ],
+        "cosine": [
+          [
+            0.6737340092658997,
+            0.7047178745269775,
+            0.6003216505050659
+          ],
+          [
+            0.759039044380188,
+            0.6670205593109131,
+            0.6182708740234375
+          ],
+          [
+            0.6248018741607666,
+            0.6016588807106018,
+            0.7571395635604858
+          ]
+        ]
+      },
+      "SearchQuery": {
+        "images": [
+          "burger",
+          "hotdog_control",
+          "banana_control"
+        ],
+        "descriptions": [
+          "A photo of a hot dog: a sausage in a long split bun.",
+          "A photo of a hamburger: a ground beef patty in a round bun.",
+          "A photo of bananas."
+        ],
+        "cosine": [
+          [
+            0.619913637638092,
+            0.6792359352111816,
+            0.5576887130737305
+          ],
+          [
+            0.7524369955062866,
+            0.6277308464050293,
+            0.5874658226966858
+          ],
+          [
+            0.5638420581817627,
+            0.5388804078102112,
+            0.7559078931808472
+          ]
+        ]
+      }
+    },
+    "original_family_C": 100,
+    "original_family_temperature": 0.08310149696594227,
+    "original_unscaled_hotdog_probability": 0.98322957,
+    "random_resampling_seed": 42,
+    "random_resampling": {
+      "training": {
+        "photos": 400,
+        "reader_load_seconds": 4.120634000748396,
+        "embedding_seconds": 67.09203071705997,
+        "cache_hits": 0,
+        "fit_seconds": 5.072646697983146,
+        "cv_accuracy": 1.0,
+        "device": "cuda:0"
+      },
+      "evaluation": {
+        "photos": 200,
+        "correct": 200,
+        "accuracy": 1.0,
+        "embedding_ms_total": 31701.678631827235,
+        "decision_ms_total": 268.9083516597748,
+        "cache_hits": 0
+      },
+      "burger": {
+        "name": "burger.jpg",
+        "answer": "hotdog",
+        "probabilities": {
+          "hotdog": 1.0,
+          "not_hotdog": 3.2650254218768238e-43,
+          "none": 0.0
+        },
+        "calibrated": false,
+        "reader_load_seconds": 0.0,
+        "embedding_ms": 168.31542924046516,
+        "decision_ms": 1.268528401851654,
+        "cached": false
+      }
+    }
+  },
+  "screenshot_result": {
+    "method": "Venn Decisions API Choice with generic venn-1 head; no task-specific family trained",
+    "request": {
+      "model": "venn-1",
+      "state": {
+        "image": "<base64 image omitted>"
+      },
+      "questions": {
+        "food": {
+          "type": "choice",
+          "instructions": "Which food is pictured?",
+          "criteria": {
+            "hotdog": "A hot dog: a sausage in a long split bun.",
+            "hamburger": "A hamburger: a ground beef patty in a round bun.",
+            "none": null
+          }
+        }
+      }
+    },
+    "response": {
+      "model": "venn-1",
+      "provider": "Venn",
+      "answers": {
+        "food": {
+          "type": "choice",
+          "choice": "hamburger",
+          "confidence": 0.7816920410578226,
+          "probabilities": {
+            "hotdog": 0.14486966163696877,
+            "hamburger": 0.7816920410578226,
+            "none": 0.07343829730520861
+          },
+          "venn": {
+            "calibrated": false,
+            "none_probability": 0.07343830168247223,
+            "abstained": false
+          }
+        }
+      }
+    },
+    "experimental_media": true
+  },
+  "screenshot_sha256": "0d8ee69078d692a02ac8f66f19310bd7723ea7a0890aaed7a8bdafc4d3f6e2bf"
+}

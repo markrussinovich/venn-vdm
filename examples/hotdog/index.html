@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hot dog or not hot dog - Venn</title>
+<script>
+(() => {
+  const param = new URLSearchParams(window.location.search).get("scoutTheme");
+  const theme = param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+* { box-sizing:border-box }
+body { margin:0; padding:32px; background:var(--cp-bg); color:var(--cp-text); font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif }
+main { max-width:1160px; margin:auto }
+h1 { font-size:44px; letter-spacing:-1.5px; margin:8px 0 }
+h2 { margin:0 0 12px; font-size:20px }
+p { color:var(--cp-text-muted); line-height:1.5 }
+.eyebrow { color:var(--cp-accent); text-transform:uppercase; letter-spacing:2px; font-weight:700 }
+.steps { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:24px 0 }
+.card { border:1px solid var(--cp-border); border-radius:16px; background:var(--cp-surface); padding:20px }
+button,select { border:1px solid var(--cp-border); border-radius:.625rem; padding:12px 16px; background:var(--cp-surface); color:var(--cp-text); font:inherit }
+button { cursor:pointer }
+button.primary { background:var(--cp-accent); color:var(--cp-accent-fg); border-color:var(--cp-accent) }
+button:disabled { opacity:.5; cursor:wait }
+.stage { display:grid; grid-template-columns:1fr 1fr; gap:24px }
+#photo { width:100%; height:320px; object-fit:contain; background:var(--cp-surface-soft); border-radius:10px }
+#verdict { font-size:40px; font-weight:750; margin:16px 0; line-height:1.1 }
+.good { color:var(--cp-success) }
+.bad { color:var(--cp-danger) }
+.timings { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:24px }
+.metric { background:var(--cp-surface-soft); padding:16px; border-radius:10px }
+.metric strong { display:block; font-size:28px }
+.metric span { color:var(--cp-text-muted) }
+#status { padding:16px; background:var(--cp-accent-soft); border-radius:10px; margin:16px 0; min-height:52px }
+#output { white-space:pre-wrap; font:13px Consolas,"Courier New",Courier,monospace; max-height:430px; overflow:auto }
+select { width:100%; margin:12px 0 }
+.fine { font-size:13px }
+@media(max-width:760px) { body{padding:16px} .steps,.stage{grid-template-columns:1fr} h1{font-size:34px} }
+</style>
+</head>
+<body><main>
+<div class="eyebrow">Venn / local vision demo</div>
+<h1>Hot dog. Or not hot dog.</h1>
+<p>Send an image and a typed Choice question through the Venn Decisions API. No training or photo upload to a cloud service.</p>
+<div class="steps">
+<section class="card"><h2>1. Ask Venn without task training</h2><p>Send a prompt and the selected image to Venn; inspect the typed response.</p><button class="primary" id="compare">Send to Venn</button></section>
+<section class="card"><h2>2. Train a custom family</h2><p>Read your labeled photos, then fit a linear family. The reader's weights do not change.</p><button class="primary" id="train">Train family</button><p id="training" class="fine">No fitted family yet.</p></section>
+<section class="card"><h2>3. Evaluate separately</h2><p>Measure accuracy on labeled test photos never used in fitting. This does not train the family.</p><button id="evaluate">Evaluate test folder</button><p id="accuracy" class="fine">No evaluation yet.</p></section>
+<section class="card"><h2>4. Run repeatedly</h2><p>Choose a photo and reuse the saved family. Image reading and decision scoring are timed separately.</p><p id="device"></p><p class="fine">Cached vectors are labeled explicitly. Probabilities are not an accuracy guarantee.</p></section>
+</div>
+<div id="status" role="status" aria-live="polite">Connecting...</div>
+<div class="stage">
+<section class="card"><h2>Your local photos</h2><select id="picker" aria-label="Choose a local photo"></select><img id="photo" alt="Selected food photo"><button id="judge">Judge with trained family</button><p class="fine">Training, test, and demo folders are visible in the selector.</p></section>
+<section class="card"><h2>The decision</h2><div id="verdict">Pick a photo.</div><p id="probabilities"></p><div class="timings"><div class="metric"><strong id="embedding">--</strong><span id="cache">Image to vector</span></div><div class="metric"><strong id="scoring">--</strong><span id="score-label">Venn decision only</span></div></div><p class="fine">Reader loading is reported separately. Warm reader inference is not the same as a cached-vector lookup.</p><pre id="output"></pre></section>
+</div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let inventory = "", lastResult = null;
+function showPhoto() {
+  const id = $("picker").value;
+  if (id) $("photo").src = "/image/" + encodeURIComponent(id);
+  $("verdict").textContent = "Ready to judge.";
+  $("verdict").className = "";
+  $("probabilities").textContent = "";
+  $("embedding").textContent = "--";
+  $("scoring").textContent = "--";
+  $("output").textContent = "";
+}
+async function action(name) {
+  try {
+    const response = await fetch("/action/" + name, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:$("picker").value})});
+    if (!response.ok) throw new Error(await response.text());
+    lastResult = null;
+    await refresh();
+  } catch (error) { $("status").textContent = error.message; }
+}
+async function refresh() {
+  try {
+    const response = await fetch("/state");
+    if (!response.ok) throw new Error(await response.text());
+    const state = await response.json();
+    $("device").textContent = "Reader: " + state.device + " / float32. Decision: CPU.";
+    const signature = JSON.stringify(state.images);
+    if (signature !== inventory) {
+      inventory = signature; $("picker").replaceChildren();
+      for (const image of state.images) {
+        const option = document.createElement("option");
+        option.value = image.id; option.textContent = image.group + " / " + image.name;
+        $("picker").append(option);
+      }
+      const demo = state.images.find(image => image.group === "demo" && image.name.startsWith("hotdog"));
+      if (demo) $("picker").value = demo.id;
+      showPhoto();
+    }
+    const job = state.job;
+    $("status").textContent = job.error || job.phase + (job.busy ? " ..." : "");
+    $("train").disabled = job.busy;
+    $("evaluate").disabled = job.busy || !state.trained;
+    $("judge").disabled = job.busy || !state.trained || !state.images.length;
+    $("compare").disabled = job.busy || !state.images.length;
+    if (state.training.photos) {
+      const t = state.training;
+      $("training").textContent = `${t.photos} photos / read ${t.embedding_seconds.toFixed(2)} s (${t.cache_hits} cached) / fit ${t.fit_seconds.toFixed(2)} s / reader load ${t.reader_load_seconds.toFixed(2)} s`;
+    }
+    const resultSignature = JSON.stringify(job.result);
+    if (job.result && resultSignature !== lastResult) {
+      lastResult = resultSignature;
+      const r = job.result;
+      $("output").textContent = JSON.stringify(r, null, 2);
+      if ("accuracy" in r) $("accuracy").textContent = `${r.correct}/${r.photos} correct (${(r.accuracy*100).toFixed(1)}%). ${r.cache_hits} cached vectors.`;
+      if (r.answer) {
+        $("verdict").textContent = r.answer === "hotdog" ? "HOT DOG!" : r.answer === "hamburger" ? "NOT HOT DOG — HAMBURGER" : "NOT HOT DOG!";
+        $("verdict").className = r.method === "venn_decisions_api" ? "" : (r.answer === "hotdog" ? "good" : "bad");
+        if (r.method === "venn_decisions_api") {
+          $("output").textContent = JSON.stringify({request:{model:r.prompt.model,state:"<selected image>",questions:r.prompt.questions},response:{model:r.response.model,provider:r.response.provider,answers:r.response.answers}}, null, 2);
+          $("score-label").textContent = "Venn API response";
+          $("probabilities").textContent = `Venn Decisions API confidence: ${(r.probabilities.hamburger*100).toFixed(2)}%. Calibration: ${r.calibrated ? "yes" : "not calibrated"}.`;
+          $("embedding").textContent = r.elapsed_ms.toFixed(2) + " ms";
+          $("scoring").textContent = "API";
+          $("cache").textContent = "Full request: image + prompt + decision";
+        } else {
+          $("score-label").textContent = "Venn decision only";
+          $("output").textContent = JSON.stringify(r, null, 2);
+          $("probabilities").textContent = `Hot dog score: ${(r.probabilities.hotdog*100).toFixed(2)}%. Calibration: ${r.calibrated ? "yes" : "not calibrated"}.`;
+          $("embedding").textContent = r.embedding_ms.toFixed(2) + " ms";
+          $("scoring").textContent = r.decision_ms.toFixed(2) + " ms";
+          $("cache").textContent = r.cached ? "Cached vector lookup (not reader inference)" : "Fresh reader inference";
+        }
+      }
+    }
+  } catch (error) { $("status").textContent = "Connection error: " + error.message; }
+}
+$("picker").addEventListener("change", showPhoto);
+for (const name of ["train","evaluate","judge","compare"]) $(name).addEventListener("click", () => action(name));
+refresh(); setInterval(refresh, 1000);
+</script>
+</body></html>

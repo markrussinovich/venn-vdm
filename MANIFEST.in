@@ -1,0 +1,15 @@
+include README.md LICENSE NOTICE SECURITY.md
+include CONTRIBUTING.md CODE_OF_CONDUCT.md CITATION.cff
+recursive-include examples *.py *.md *.html *.ipynb
+include examples/precedent_desk/queue_descriptions.json examples/precedent_desk/resolution_notes.json
+recursive-include .github *.yml *.md
+recursive-include docs *.md *.css *.json *.txt
+recursive-include docs/media *.jpg *.png *.gif *.svg *.srt *.vtt
+recursive-include benchmarks *.json
+recursive-include scripts *.py *.js
+recursive-include clients *.mjs
+recursive-include skills *.md
+recursive-include tests *.py *.mjs *.md package.json package-lock.json requirements.txt
+prune tests/clients/node_modules
+prune examples/precedent_desk/data
+global-exclude __pycache__ *.py[cod] *.sqlite* *.safetensors *.pt *.npy *.npz *.mp4

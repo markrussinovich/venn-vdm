@@ -1,0 +1,142 @@
+{
+  "format_version": 1,
+  "source": "Transcribed from docs/benchmark.md reference table; rounded to two percentage decimals. Not a new evaluation or an original raw-run archive.",
+  "criterion": "Point estimate within rounded published 95% reference interval; consistency check only, not statistical equivalence or model validation.",
+  "protocol_sha256": "dca2281b5ee4d59303f9c578117606a967335396608f1a2c7ee226c122008fad",
+  "metrics": [
+    {
+      "path": [
+        "datasets",
+        "banking77",
+        "nearest_reference",
+        "accuracy"
+      ],
+      "value": 0.9279000000000001,
+      "interval": [
+        0.9136,
+        0.9409000000000001
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "banking77",
+        "membership_7plus1",
+        "accuracy"
+      ],
+      "value": 0.9990000000000001,
+      "interval": [
+        0.9964,
+        0.9997
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "banking77",
+        "membership_190plus10",
+        "recall_at10"
+      ],
+      "value": 0.9605,
+      "interval": [
+        0.9525,
+        0.968
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "banking77",
+        "population_shift",
+        "null",
+        "rejection_rate"
+      ],
+      "value": 0.0,
+      "interval": [
+        0.0,
+        0.056600000000000004
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "banking77",
+        "population_shift",
+        "shifted",
+        "rejection_rate"
+      ],
+      "value": 0.9218999999999999,
+      "interval": [
+        0.8298000000000001,
+        0.9662000000000001
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "clinc",
+        "nearest_reference",
+        "accuracy"
+      ],
+      "value": 0.922,
+      "interval": [
+        0.907,
+        0.938
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "clinc",
+        "membership_7plus1",
+        "accuracy"
+      ],
+      "value": 0.9845,
+      "interval": [
+        0.9781,
+        0.9891
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "clinc",
+        "membership_190plus10",
+        "recall_at10"
+      ],
+      "value": 0.8245,
+      "interval": [
+        0.8095,
+        0.8390000000000001
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "clinc",
+        "population_shift",
+        "null",
+        "rejection_rate"
+      ],
+      "value": 0.0,
+      "interval": [
+        0.0,
+        0.056600000000000004
+      ]
+    },
+    {
+      "path": [
+        "datasets",
+        "clinc",
+        "population_shift",
+        "shifted",
+        "rejection_rate"
+      ],
+      "value": 0.8906000000000001,
+      "interval": [
+        0.7909999999999999,
+        0.946
+      ]
+    }
+  ]
+}

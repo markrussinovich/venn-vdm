@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "venn-vdm"
+version = "0.1.0"
+description = "Venn: a Vector Decision Model for typed decisions over embeddings"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Mark Russinovich" }]
+requires-python = ">=3.12,<3.13"
+keywords = ["embeddings", "decisions", "routing", "classification", "abstention", "vector-search", "faiss"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=2,<3",
+  "torch>=2.9,<3",
+  "faiss-cpu>=1.9,<2",
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.30,<1",
+  "orjson>=3.10,<4",
+  "safetensors>=0.4,<1",
+  "huggingface-hub>=1,<3",
+  "threadpoolctl>=3,<4",
+]
+
+[project.optional-dependencies]
+# Pinned reader (EmbeddingGemma 2) for text and image input.
+embedding = [
+  "transformers>=5.22,<6",
+  "sentence-transformers>=6.1,<7",
+  "torchvision>=0.24,<1",
+  "pillow>=10,<14",
+  "soundfile>=0.13,<1",
+  "jinja2>=3.1,<4",
+]
+# Benchmark, semantic suite and authored demos.
+benchmark = [
+  "datasets>=4,<6",
+  "scikit-learn>=1.6,<2",
+  "matplotlib>=3.9,<4",
+  "peft>=0.21,<1",
+  "httpx>=0.28,<1",
+  "uvloop>=0.21,<1; sys_platform != 'win32'",
+]
+dev = ["build>=1.2,<2", "wheel", "pytest>=8,<10", "pyflakes>=3,<5", "httpx>=0.28,<1", "Markdown>=3.7,<4", "pillow>=10,<14", "scikit-learn>=1.6,<2"]
+mcp = ["mcp>=1,<2"]
+adapters = [
+  "qdrant-client>=1.15,<2",
+  "weaviate-client>=4.16,<5",
+  "lancedb>=0.25,<1",
+  "pgvector>=0.4,<1",
+  "psycopg[binary]>=3.2,<4",
+]
+arena = ["vizdoom>=1.3.2,<2", "imageio-ffmpeg>=0.6,<1", "pillow>=10,<14"]
+
+[project.scripts]
+venn = "venn.cli:main"
+
+[project.urls]
+Homepage = "https://markrussinovich.github.io/venn-vdm/"
+Repository = "https://github.com/markrussinovich/venn-vdm"
+Documentation = "https://github.com/markrussinovich/venn-vdm/blob/main/docs/getting-started.md"
+Model = "https://huggingface.co/markrussinovich/venn-1"
+Issues = "https://github.com/markrussinovich/venn-vdm/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["venn*"]
+
+[tool.setuptools.package-data]
+venn = ["*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# a test still running after 5 minutes dumps every thread's stack, so a hang on any CI platform shows where it is
+faulthandler_timeout = 300

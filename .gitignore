@@ -1,0 +1,17 @@
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+release/
+logs/
+docs/media/*.mp4
+*.sqlite*
+venn-runtime-assets/
+.env
+.env.*
+!.env.example
+examples/precedent_desk/data/

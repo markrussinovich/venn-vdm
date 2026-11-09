@@ -1,0 +1,97 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:04.000
+Both choose from answers supplied with your question
+
+2
+00:00:04.000 --> 00:00:13.000
+Jev returns a selected answer and its probabilities
+
+3
+00:00:13.000 --> 00:00:24.000
+Venn scores answers using numeric representations of meaning
+
+4
+00:00:24.000 --> 00:00:28.000
+Now predict outcomes from complaints to this company
+
+5
+00:00:28.000 --> 00:00:34.000
+Use Jev's label to group past outcomes
+
+6
+00:00:34.000 --> 00:00:42.000
+Venn retrieves similar complaints with recorded outcomes
+
+7
+00:00:42.000 --> 00:00:48.000
+Evaluate outcome rankings on previously unseen complaints
+
+8
+00:00:48.000 --> 00:00:52.000
+Now compare only complaints requesting a refund
+
+9
+00:00:52.000 --> 00:00:57.000
+Imagine removing the complaint archive
+
+10
+00:00:57.000 --> 00:01:04.000
+Now learn industry labels from company filings
+
+11
+00:01:04.000 --> 00:01:09.000
+Test both methods on the cookbook's filings
+
+12
+00:01:09.000 --> 00:01:15.000
+Then test on additional held-out company filings
+
+13
+00:01:15.000 --> 00:01:21.000
+Inspect one filing's predictions
+
+14
+00:01:21.000 --> 00:01:29.000
+Venn learns industry labels from past filings
+
+15
+00:01:29.000 --> 00:01:34.000
+Predict the critic's score from wine tasting notes
+
+16
+00:01:34.000 --> 00:01:42.000
+Jev builds features by answering questions about notes
+
+17
+00:01:42.000 --> 00:01:56.000
+Venn fits a prediction head on stored embeddings
+
+18
+00:01:56.000 --> 00:02:02.000
+Evaluate critic scores on previously unseen wine notes
+
+19
+00:02:02.000 --> 00:02:07.000
+Both learn from the same 1,200 training notes
+
+20
+00:02:07.000 --> 00:02:14.000
+Price uses a different, already-stored embedding cache
+
+21
+00:02:14.000 --> 00:02:20.000
+Venn's time excludes the already-completed embedding step
+
+22
+00:02:20.000 --> 00:02:23.000
+Local predictions require no additional API charges
+
+23
+00:02:23.000 --> 00:02:27.000
+Additional tests favor Jev on these reading tasks
+
+24
+00:02:27.000 --> 00:02:30.000
+Build decisions from your own data

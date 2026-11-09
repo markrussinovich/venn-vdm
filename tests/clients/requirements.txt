@@ -1,0 +1,3 @@
+llm-openrouter-decisions @ git+https://github.com/aborruso/llm-openrouter-decisions.git@d22bc2b0ef33802674ca6d3ce01da478946dc34f
+llm==0.36
+httpx2==2.16.0

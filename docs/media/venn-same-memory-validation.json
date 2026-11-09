@@ -1,0 +1,31 @@
+{
+  "landscape": {
+    "decode": "passed",
+    "frames": 4500,
+    "seconds": 150.0,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "sha256": "54ad1ca21b79323b8f78ef40d8f421baccf2536352cf108ec0b64dc06fe1ccc5"
+  },
+  "vertical": {
+    "decode": "passed",
+    "frames": 1800,
+    "seconds": 60.0,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "sha256": "3d3e8165be02dca8d8fed7796de1f52dc7546300611afc7cf933b0a8d374aeaa"
+  },
+  "revision": "Vector Decision Model (VDM) naming; package renamed to venn-vdm in both video end cards",
+  "visual_review": "Encoded closing frames inspected; end-card OCR confirms the new package name in both cuts; all 6300 frames passed rendering constraints",
+  "regression_tests": "108 passed, 9 skipped in the full test suite",
+  "provenance": "Numeric evidence, executed-head provenance, shot timings and durations unchanged; both cuts regenerated from the updated renderer",
+  "other_checks": "Full video/audio decoding, rendered-text audit, Pyflakes, documentation-link checker and git diff --check passed",
+  "second_pass": "Tracked source, generated site/search index, wheel metadata, captions, posters and storyboards audited; arena and Precedent Desk encoded frames OCR sampled every two seconds, with no old branding detected",
+  "publication": "Local review only; no upload or push"
+}

@@ -1,0 +1,193 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  reader-free:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check the documented contributor installation
+        env:
+          VENN_HOME: ${{ runner.temp }}/venn-reader-free
+        run: |
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e '.[dev]'
+          python -m pip check
+          python -m pyflakes venn scripts examples tests
+          python scripts/check_docs.py
+          python -m venn quickstart
+          python -m pytest -q
+
+  arm-cpu:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04-arm
+            target: cpython-3.12-linux-aarch64-gnu
+            python: .venv/bin/python
+          - os: windows-11-arm
+            target: cpython-3.12-windows-aarch64-none
+            python: .venv/Scripts/python.exe
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: Install native ARM64 Python and CPU dependencies
+        run: |
+          uv venv --python ${{ matrix.target }} .venv
+          uv pip install --python ${{ matrix.python }} torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          uv pip install --python ${{ matrix.python }} -e ".[embedding,dev]"
+          uv pip check --python ${{ matrix.python }}
+      - name: Check CPU portability
+        env:
+          VENN_HOME: ${{ runner.temp }}/venn-state
+        run: |
+          ${{ matrix.python }} -c "import platform; assert platform.machine().lower() in ('aarch64', 'arm64'), platform.machine()"
+          ${{ matrix.python }} -c "import torch, torchvision; from sentence_transformers import SentenceTransformer; assert torch.version.cuda is None; print('CPU PyTorch:', torch.__version__, 'torchvision:', torchvision.__version__)"
+          ${{ matrix.python }} -m venn quickstart
+          ${{ matrix.python }} -m venn sweep --rows 1000 --batch-size 256
+          ${{ matrix.python }} -m pyflakes venn scripts examples tests
+          ${{ matrix.python }} scripts/check_docs.py
+          ${{ matrix.python }} -m pytest -q
+
+  windows-x64-cpu:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check Windows x86-64 CPU installation
+        env:
+          VENN_HOME: ${{ runner.temp }}/venn-windows-x64
+        run: |
+          python -c "import platform; assert platform.machine().lower() in ('amd64', 'x86_64'), platform.machine()"
+          python -m pip install "torch>=2.9,<3" --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install .
+          python -m pip check
+          python -m venn quickstart
+          python -m venn sweep --rows 19 --batch-size 8
+
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install with CPU PyTorch
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install ".[embedding,benchmark,dev,mcp,adapters]"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: tests/clients/package-lock.json
+      - name: Check that a release tag matches the project version
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python -c 'import os,tomllib; v=tomllib.load(open("pyproject.toml","rb"))["project"]["version"]; assert os.environ["RELEASE_TAG"] == "v"+v, "Tag must match project version"'
+      - name: Lint, documentation checks and tests
+        env:
+          OMP_NUM_THREADS: "2"
+          OPENBLAS_NUM_THREADS: "2"
+          MKL_NUM_THREADS: "2"
+          VENN_HOME: ${{ runner.temp }}/venn-state
+        run: |
+          python -m pyflakes venn scripts examples tests
+          python scripts/check_docs.py
+          python -m pytest -q
+      - name: Upstream Decisions clients against the contract server
+        env:
+          OMP_NUM_THREADS: "2"
+          OPENBLAS_NUM_THREADS: "2"
+        run: |
+          npm ci --ignore-scripts --prefix tests/clients
+          python -m venv "$RUNNER_TEMP/decisions-plugin"
+          "$RUNNER_TEMP/decisions-plugin/bin/python" -m pip install -r tests/clients/requirements.txt
+          python scripts/contract_server.py --port 18763 > "$RUNNER_TEMP/contract-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:18763/health; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:18763/health
+          node tests/clients/contract.mjs http://127.0.0.1:18763
+          node tests/clients/playground.mjs http://127.0.0.1:18763
+          python examples/route_ticket.py --endpoint http://127.0.0.1:18763
+          python examples/index_vectors.py --endpoint http://127.0.0.1:18763
+          "$RUNNER_TEMP/decisions-plugin/bin/python" tests/clients/plugin.py http://127.0.0.1:18763
+      - name: Build the wheel and smoke-test it outside the checkout
+        run: |
+          python -m build --no-isolation
+          python -c 'import glob,os,tarfile; archive=tarfile.open(glob.glob("dist/*.tar.gz")[0]); archive.extractall(os.path.join(os.environ["RUNNER_TEMP"], "venn-sdist"), filter="data")'
+          for source in "$RUNNER_TEMP"/venn-sdist/*; do
+            python "$source/scripts/check_docs.py"
+            python "$source/scripts/build_site.py" --output "$RUNNER_TEMP/venn-sdist-site"
+          done
+          python -m pip install --no-deps --force-reinstall dist/*.whl
+          cd "$RUNNER_TEMP"
+          venn quickstart
+          venn sweep --rows 19 --batch-size 8
+      - name: Smoke-test the wheel with only base dependencies
+        env:
+          VENN_HOME: ${{ runner.temp }}/venn-base-wheel-state
+        run: |
+          python -m venv "$RUNNER_TEMP/venn-base-wheel"
+          wheel_python="$RUNNER_TEMP/venn-base-wheel/bin/python"
+          "$wheel_python" -m pip install 'torch>=2.9,<3' --index-url https://download.pytorch.org/whl/cpu
+          "$wheel_python" -m pip install "$GITHUB_WORKSPACE"/dist/*.whl
+          "$wheel_python" -m pip check
+          cd "$RUNNER_TEMP"
+          "$wheel_python" -I -m venn quickstart
+          "$wheel_python" -I -m venn sweep --rows 19 --batch-size 8
+          "$wheel_python" -I "$GITHUB_WORKSPACE/scripts/check_wheel.py"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: venn-dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

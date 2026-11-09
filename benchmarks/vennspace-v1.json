@@ -1,0 +1,21 @@
+{
+  "name": "VennSpace-1",
+  "version": 1,
+  "seed": 20261102,
+  "profile": "venn-1",
+  "reader": "google/embeddinggemma-2",
+  "reader_revision": "f9972ac22e696a105c482202646979e33e4b5a1e",
+  "dimensions": 768,
+  "membership_source_split": "train",
+  "prompt": "Classification",
+  "sources": {
+    "banking77": {"repository": "PolyAI/banking77", "revision": "5724874eb34f7571b611868e14cba91202b9b2a9", "config": "default", "label": "label"},
+    "clinc": {"repository": "clinc/clinc_oos", "revision": "8e951f061d8a5bedeaec359c02de3185e8c3359a", "config": "plus", "label": "intent"}
+  },
+  "nearest_reference": {"train_references_per_label": 20, "test_queries_per_label": 20, "bootstrap_unit": "intent label", "bootstrap_repeats": 2000},
+  "membership_small": {"trials": 2000, "inliers": 7, "outliers": 1, "method": "leave-one-out centroid"},
+  "membership_large": {"trials": 200, "inliers": 190, "outliers": 10, "inlier_labels": 5, "method": "squared Euclidean fifth-neighbor distance", "bootstrap_repeats": 2000},
+  "population_shift": {"trials_per_condition": 64, "population_size": 48, "labels": 10, "null_counts": [5,5,5,5,5,5,5,5,4,4], "shift_counts": [20,4,3,3,3,3,3,3,3,3], "permutations": 199, "alpha": 0.05, "bandwidth": 1.0},
+  "scope": "Frozen geometric tasks; no trained head, no composite rank, no posterior/calibration or guardrail claim. Not a relabeling of historical thesis gates.",
+  "data_policy": "Fetch pinned original sources locally. Deduplicate normalized text across official train/test splits. Publish hashes/row identities/numerical scores only, never source text or embeddings."
+}

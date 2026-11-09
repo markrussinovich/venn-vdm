@@ -1,0 +1,18 @@
+{
+  "status": "executed",
+  "scope": "API execution replay on the existing fitting notes; not a new held-out evaluation or timing comparison.",
+  "source_sha256": "e253fe7079f2843e908969276b8ce73f1997eb5eb22415e3aa93a25730cea9d7",
+  "examples": 1200,
+  "embedding": "Existing pinned SentenceSimilarity cache; no new embedding or API calls.",
+  "register_family_calls": 1,
+  "elapsed_seconds": 28.411884432658553,
+  "form": "kernel_ridge",
+  "alpha": 0.1,
+  "gamma": 4.0,
+  "input_scale": 0.1,
+  "head_checksum": "1110eed70129b213ad5c5452248413e24daa04ea80bb548337ce003a4ccab0a1",
+  "events": [
+    "register_family started",
+    "register_family returned"
+  ]
+}
