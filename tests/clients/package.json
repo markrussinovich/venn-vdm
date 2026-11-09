@@ -5,7 +5,7 @@
     "contract": "node contract.mjs"
   },
   "dependencies": {
-    "@openrouter/sdk": "1.5.60",
+    "@openrouter/sdk": "1.5.63",
     "@effect/ai-openrouter": "4.1.2",
     "effect": "4.1.2"
   }
