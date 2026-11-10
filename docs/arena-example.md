@@ -58,7 +58,7 @@ their own terms.
 
 <!-- video: venn-arena -->
 
-https://github.com/user-attachments/assets/f072587e-9dee-4b6a-b115-aee7d4e21ca5
+https://github.com/user-attachments/assets/42b3ddeb-0c9a-42f3-ad5a-e1d9d8734088
 
 [Download the video](https://github.com/markrussinovich/venn-vdm/releases/download/media-v1/venn-arena.mp4)
 or read [what the video shows and how it was measured](demos.md#screen-only-arena-video).

@@ -216,7 +216,7 @@ question types, the JavaScript client and the MCP bridge.
 
 <!-- video: venn-arena -->
 
-https://github.com/user-attachments/assets/f072587e-9dee-4b6a-b115-aee7d4e21ca5
+https://github.com/user-attachments/assets/42b3ddeb-0c9a-42f3-ad5a-e1d9d8734088
 
 The arena example drives a ViZDoom player with nothing but Venn's outcome API
 and a FAISS store. Venn embeds each screen, looks up how similar moments turned
