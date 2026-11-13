@@ -37,11 +37,15 @@ class OutcomeService:
         """Register an outcome store adapter and return its handle.
 
         The adapter needs a ``tag``, a ``search`` method, ``read_after_write`` and ``distance``; raises
-        ``ValueError`` if it cannot search.
+        ``ValueError`` if its tag, search method or nonempty string metadata is missing or invalid.
         """
-        VectorTag.parse(adapter.tag)
+        VectorTag.parse(getattr(adapter, "tag", None))
         if not callable(getattr(adapter, "search", None)):
             raise ValueError("An outcome adapter must implement filtered fresh searches")
+        for attr in ("read_after_write", "distance"):
+            value = getattr(adapter, attr, None)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"Outcome adapter must declare nonempty {attr}")
         handle = uuid.uuid4().hex
         self.stores[handle] = adapter
         return handle
@@ -212,6 +216,12 @@ class OutcomeService:
             if type(exact) is not bool:
                 raise ValueError("exact_match must be boolean")
             neighbors = adapter.search(values, options, k, filters=filters, exact_match=exact)
+            if not isinstance(neighbors, dict):
+                raise ValueError("Outcome adapter returned invalid option map")
+            for option in options:
+                rows = neighbors.get(option)
+                if not isinstance(rows, (list, tuple)) or len(rows) != len(values):
+                    raise ValueError("Outcome adapter returned incomplete rows")
             for row, result in enumerate(results):
                 stats, utilities = {}, []
                 prior = question.get("unsupported_value")
@@ -219,8 +229,17 @@ class OutcomeService:
                     raise ValueError("Unsupported utility prior must be finite")
                 for option in options:
                     evidence = neighbors[option][row]
-                    outcomes = np.asarray([case["outcome"] for case in evidence], dtype=float)
-                    distances = np.asarray([case["distance"] for case in evidence], dtype=float)
+                    if (not isinstance(evidence, (list, tuple)) or len(evidence) > k
+                            or any(not isinstance(case, dict) or not {"id", "outcome", "distance"} <= case.keys()
+                                   for case in evidence)):
+                        raise ValueError("Outcome adapter returned invalid evidence cases")
+                    try:
+                        outcomes = np.asarray([case["outcome"] for case in evidence], dtype=float)
+                        distances = np.asarray([case["distance"] for case in evidence], dtype=float)
+                    except (TypeError, ValueError, OverflowError) as error:
+                        raise ValueError("Outcome adapter returned invalid evidence values") from error
+                    if outcomes.ndim != 1 or distances.ndim != 1:
+                        raise ValueError("Outcome adapter returned nonscalar evidence values")
                     if not np.isfinite(outcomes).all() or not np.isfinite(distances).all():
                         raise ValueError("Store returned nonfinite evidence")
                     supported = len(outcomes) >= minimum

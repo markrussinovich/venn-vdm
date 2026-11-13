@@ -184,6 +184,14 @@ metadata constraints are applied **before** top-k:
 | `WeaviateOutcomeAdapter` | Backend option/metadata filters on each query; replication consistency determines visibility. Distances retain backend semantics. |
 | `AzureSearchOutcomeAdapter` | Fresh vector-only queries against the configured index with `preFilter` option/metadata predicates; `exhaustive=True` opts into brute-force search. Indexing is eventually consistent; completed uploads do not guarantee search visibility. |
 
+Custom adapters must provide a complete vector `tag`, a callable `search` method,
+and nonempty string `read_after_write` and `distance` declarations. Search results
+must map each requested option to a list or tuple with one entry per query state.
+Each entry is a list or tuple of at most `k` case dictionaries containing `id`,
+finite scalar `outcome` and finite scalar `distance` values. Malformed results
+raise `ValueError` rather than becoming measured evidence. These interface checks
+do not verify the adapter's declared distance or visibility semantics.
+
 The batch-reading adapters used for sweeps are separate from these outcome
 adapters. Qdrant and LanceDB contracts exercise actual local stores;
 PostgreSQL, Weaviate and Azure AI Search require separately provisioned services
