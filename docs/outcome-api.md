@@ -214,6 +214,36 @@ an episodic-control convention. This is store-based learning with a frozen
 image reader. The section below is the one place the outcome path trains
 anything, and what it trains is a head of a few tens of thousands of parameters.
 
+**Optional logged-policy diagnostics.** For events with measured rewards and
+recorded action propensities, `venn.offpolicy.estimate_logged_policy` reports IPS,
+self-normalized IPS, effective sample size, maximum weight and observed rewards:
+
+```python
+from venn.offpolicy import estimate_logged_policy
+
+report = estimate_logged_policy(
+    rewards=[1., 0., 1., 0.],
+    logging_probability=[.5, .5, .5, .5],
+    target_probability=[1., 0., 1., 0.],
+)
+```
+
+Every position must refer to the same logged event in all three arrays. The
+probabilities are those assigned to the **action actually taken**, conditional on
+its logged context, by the behavior and target policies respectively. Retain the
+context, action, policy version, action propensity and eventual reward when
+logging; epsilon alone is not the propensity, and `exploratory` is not a
+probability. For example, with two actions, epsilon 0.1 and a unique greedy
+winner, the behavior probabilities are 0.95 and 0.05, not 0.1. Ties and fallback
+policies change that calculation. The current service does not return action
+propensities, so existing outcomes without these records are insufficient.
+
+The helper does not infer missing rewards, clip weights, fit a reward model or
+provide confidence intervals. Small effective sample size warns of fragile
+estimates. Valid propensities, conditional exchangeability and policy overlap
+are external assumptions that these arrays cannot verify; results do not certify
+a causal improvement or justify changing an experimental gate.
+
 ## Compile the store into a head
 
 `register_family` trains a small head from every case the store exports and
