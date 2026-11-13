@@ -261,6 +261,28 @@ family carry `family`, `objective` and the per-option `head` scores, with
 and is flagged in `exploratory`. A family answers only states in its store's
 profile and only under the goal it was registered with.
 
+**Experimental optimizer, opt-in only.** AdamW remains the default. Python callers
+can try Muon on the bilinear head's two matrix parameters, with AdamW retaining
+the scalar bias:
+
+```python
+service.register_family(
+    "experimental-policy", from_store=store, options=["support", "billing"],
+    fit={"optimizer": "muon", "muon_lr": 0.01, "lr": 0.001},
+)
+```
+
+This requires a PyTorch build exposing `torch.optim.Muon`; unsupported builds fail
+explicitly. `muon_lr` must be finite and positive and is valid only for Muon. When
+omitted, it uses `lr`; `lr` still controls the AdamW bias update. The fitting report
+records the experimental optimizer and effective Muon learning rate. Head tensor
+layout and saved-family serving are unchanged.
+
+Structural tests establish that this path runs, not that it improves convergence,
+quality or runtime. Compare against a tuned AdamW baseline with the same data,
+splits, seeds and compute budget before making such a claim or changing defaults.
+Keep existing experimental gates and their thresholds unchanged.
+
 In the arena, the head compiled from a 380,000-case memory with the `awr`
 objective scored 8.4 kills per game served alone, against 6.2 for the memory it
 came from, over 250 scored games across five independent memories. The
