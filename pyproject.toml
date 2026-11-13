@@ -56,7 +56,7 @@ benchmark = [
 dev = ["build>=1.2,<2", "wheel", "pytest>=8,<10", "pyflakes>=3,<5", "httpx>=0.28,<1", "Markdown>=3.7,<4", "pillow>=10,<14", "scikit-learn>=1.6,<2"]
 mcp = ["mcp>=1,<3"]
 adapters = [
-  "azure-search-documents>=11.6,<12",
+  "azure-search-documents>=11.6,<13",
   "qdrant-client>=1.15,<2",
   "weaviate-client>=4.16,<5",
   "lancedb>=0.25,<1",

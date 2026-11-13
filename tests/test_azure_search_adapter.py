@@ -28,6 +28,9 @@ def azure_search():
         def body(self):
             return self.data
 
+        def json(self):
+            return json.loads(self.data)
+
     class Transport(HttpTransport):
         def __init__(self):
             self.requests = []
