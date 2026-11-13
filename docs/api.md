@@ -201,6 +201,32 @@ await sdk.alpha.decisions.create(
 Its constructor-level URL does not override this operation's default
 server. Use a transport allowlist when testing local requests.
 
+**Optional paired Choice-logit diagnostics.** Python evaluation code can compare
+two recorded sets of Choice logits by stable option identity:
+
+```python
+from venn.index.counterfactual import compare_choice_logits
+
+report = compare_choice_logits(
+    ["support", "billing"], [[2., 1., -1.]],
+    ["billing", "support"], [[1., 2., -1.]],
+)
+```
+
+Each finite two-dimensional array has one column per named candidate and a final
+`none` column. Both arrays must describe the same states in the same row order,
+using compatible representation profiles, head versions and score scales; the
+caller must verify those identities. The result reports added/removed options,
+argmax and abstention switches, tie sets and raw logit drift on shared options.
+`atol` controls absolute tie/drift tolerance. A candidate reorder can change the
+chosen identity in an exact tie even when shared scores are unchanged.
+
+This is an output comparison, not a proof of semantic equivalence, correctness,
+calibration or causality. Adding/removing candidates changes the candidate frame
+and can legitimately change scores. Common logit offsets also count as raw drift
+even when softmax probabilities are unchanged. The helper is opt-in and does not
+alter service decisions or produce counterfactual ground-truth labels.
+
 ## Index lifecycle
 
 The executable [index example](../examples/index_vectors.py) includes complete
