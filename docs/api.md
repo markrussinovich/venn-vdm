@@ -223,6 +223,36 @@ across streams: send `{"type": "index_apply", "question_ref": "..."}` (with
 options or instructions requires re-registration. Above 512 output rows, use
 NDJSON rather than the bounded Decisions response.
 
+For Python callers scoring several Choice questions over the same vectors,
+`venn.index.apply.PreparedQuestionBatch` is an opt-in helper:
+
+```python
+from venn.index.apply import PreparedQuestion, PreparedQuestionBatch
+
+prepared = [
+    PreparedQuestion(head, question_vector, option_vectors, temperature=1.0)
+    for question_vector, option_vectors in question_frames
+]
+for offset, probabilities in PreparedQuestionBatch(prepared).stream(vectors):
+    for question_index, rows in enumerate(probabilities):
+        consume(question_index, offset, rows)
+```
+
+`head` must be the same frozen `CosineAbstention` or `ContextAbstention` instance
+for every question. Question/option tensors must share device, dtype and vector
+width. Each output retains its question's candidate order and trailing `none`
+column; ragged candidate sets are supported. Calibration temperatures must be
+finite and strictly positive. `stream(..., temperature=...)` overrides every
+question's calibration; otherwise each prepared question keeps its own.
+
+The helper shares state projections, buckets candidate counts and tiles rows.
+`max_workspace_bytes` (default 8 MiB) targets temporary tensor sizes, not peak
+process memory; model storage, backend allocations and returned logits are extra.
+`logits` returns all rows, while `stream` bounds chunks. It does not change HTTP
+request batching or automatically replace the server's single-question path.
+Measure throughput and process memory on the intended question counts, vector
+widths and hardware before choosing it; a speedup is not guaranteed.
+
 ## Family lifecycle
 
 Use `PUT /families/{name}` with `examples`, `options`, `instructions_vec` and
