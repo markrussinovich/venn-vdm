@@ -189,7 +189,7 @@ implemented. No network media URLs are fetched.
 Typed media parts nested in JSON arrays/objects are rejected explicitly,
 not silently embedded as their JSON text.
 
-OpenRouter SDK 1.5.60, the version the client tests pin, requires:
+OpenRouter SDK 1.5.63, the version the client tests pin, requires:
 
 ```js
 await sdk.alpha.decisions.create(
