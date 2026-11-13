@@ -141,6 +141,33 @@ def test_public_http_outcome_and_binary_uint8_batch(tmp_path):
         assert client.post("/decide-batch", content=b"bad", headers=headers).status_code == 422
 
 
+@pytest.mark.parametrize("value", [[1., 9.], {"nested": 1.}])
+def test_public_http_rejects_malformed_adapter_evidence(tmp_path, value):
+    class MalformedAdapter:
+        tag = TAG
+        distance = "squared_l2"
+        read_after_write = "immediate for this synthetic test"
+
+        def search(self, *args, **kwargs):
+            return {"a": [[{"id": "case", "outcome": value, "distance": 0.}]], "b": [[]]}
+
+    fake_assets(tmp_path / "assets")
+    outcomes = OutcomeService(head_device="cpu")
+    handle = outcomes.register_store(MalformedAdapter())
+    service = DecisionService(model_dir=tmp_path / "assets", cache_path=tmp_path / "cache",
+                              registry_path=tmp_path / "registry.json", outcome_service=outcomes)
+    requests = {
+        "/decide-batch": {"states": [state()], "questions": question(handle)},
+        "/api/alpha/decisions": {"model": "venn-1", "state": state(), "questions": question(handle)},
+    }
+    with TestClient(create_app(service), base_url="http://127.0.0.1") as client:
+        for endpoint, body in requests.items():
+            response = client.post(endpoint, json=body)
+            assert response.status_code == 422, response.text
+            assert response.json()["error"]["code"] == "outcome_request"
+            assert "adapter returned" in response.text
+
+
 def test_pgvector_filters_are_parameters_and_precede_limit():
     calls = []
 
