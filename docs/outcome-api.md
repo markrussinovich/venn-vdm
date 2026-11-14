@@ -104,6 +104,15 @@ app utility prior for unseen options; it never becomes a measured mean.
 `exploratory` identifies exploration or an unsupported chosen action.
 The default `answer` still requires measured support.
 
+Every store or family answer includes `action_probability`: the probability of
+selecting its returned `action`, conditional on the state and the policy at that
+decision. With `A` options, exploration probability `epsilon` and `G` tied greedy
+options, this is `epsilon / A + (1 - epsilon) / G` for a greedy action and
+`epsilon / A` otherwise. If no utility is available, selection is uniform over
+all options, so the propensity is `1 / A`. An explicit `unsupported_value` can
+make an unsupported option greedy. This field describes the sampling policy,
+not outcome confidence; `probabilities` and `confidence` remain null.
+
 An opt-in `exact_match: true` FAISS query uses the app's `exact_positions`
 mapping (SHA256 of a float16 key to a row) to prefer that case over averaging
 nearby cases. This reproduces episodic control's exact-state convention; it is
@@ -221,6 +230,65 @@ vector and action and uses `exact_match` and `unsupported_value` to reproduce
 an episodic-control convention. This is store-based learning with a frozen
 image reader. The section below is the one place the outcome path trains
 anything, and what it trains is a head of a few tens of thousands of parameters.
+
+**Optional logged-policy diagnostics.** For events with measured rewards and
+recorded action propensities, `venn.offpolicy.estimate_logged_policy` reports IPS,
+self-normalized IPS, effective sample size, maximum weight and observed rewards:
+
+```python
+from venn.offpolicy import estimate_logged_policy
+
+report = estimate_logged_policy(
+    rewards=[1., 0., 1., 0.],
+    logging_probability=[.5, .5, .5, .5],
+    target_probability=[1., 0., 1., 0.],
+)
+```
+
+Every position must refer to the same logged event in all three arrays. The
+probabilities are those assigned to the **action actually taken**, conditional on
+its logged context, by the behavior and target policies respectively. Retain the
+context, action, policy version, action propensity and eventual reward when
+logging; epsilon alone is not the propensity, and `exploratory` is not a
+probability. For example, with two actions, epsilon 0.1 and a unique greedy
+winner, the behavior probabilities are 0.95 and 0.05, not 0.1. Ties and fallback
+policies change that calculation. Use the returned `action_probability` rather
+than reconstructing it after the store or head changes. Existing outcomes without
+recorded propensities remain insufficient; adding this field cannot repair old logs.
+
+In your application's decision loop, capture the event before executing the
+action, persist it in your own log, then attach the measured reward afterwards:
+
+```python
+state = {"vector": vector, "tag": TEXT_TAG.to_dict()}
+questions = {"queue": {"type": "nearest_outcome", "store": store,
+                       "options": ["support", "billing"], "k": 11}}
+response = service.decide_batch([state], questions, epsilon=[0.1])
+answer = response["results"][0]["answers"]["queue"]
+event = {
+    "state": {"vector": vector.tolist(), "tag": TEXT_TAG.to_dict()},
+    "question": questions["queue"],
+    "policy_version": "app-policy-v1",
+    "action": answer["action"],
+    "logging_probability": answer["action_probability"],
+}
+# Persist event now; later add the reward actually observed for this action.
+```
+
+Venn does not persist these events. Retain the store/head version or snapshot
+identifier and any other context your policy used. If you override the returned
+action, or wrap it in another selection policy, its returned propensity no longer
+describes the actual behavior policy. Target probabilities must be computed for
+these same logged actions, not for whichever actions a target policy samples.
+
+The helper does not infer missing rewards, clip weights, fit a reward model or
+provide confidence intervals. Small effective sample size warns of fragile
+estimates. Valid propensities, conditional exchangeability and policy overlap
+are external assumptions that these arrays cannot verify; results do not certify
+a causal improvement or justify changing an experimental gate.
+Weighted products use separate binary exponents so mixed weight/reward scales do
+not erase finite contributions. Unrepresentable estimates or extreme signed
+cancellation ranges raise `ValueError` instead of returning silent zeros or infinity.
 
 ## Compile the store into a head
 

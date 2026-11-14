@@ -72,6 +72,31 @@ def test_empty_store_and_explicit_exploration_prior_are_not_measured_evidence():
     assert answer["probabilities"] is None and not answer["calibrated"]
 
 
+@pytest.mark.parametrize("forced_action", [0, 1])
+@pytest.mark.parametrize("outcomes,epsilon,settings,probabilities", [
+    ((3., 1.), .1, {}, {"a": .95, "b": .05}),
+    ((3., 1.), .1, {"goal": "minimize"}, {"a": .05, "b": .95}),
+    ((3., 3.), .1, {}, {"a": .5, "b": .5}),
+    ((None, None), .1, {}, {"a": .5, "b": .5}),
+    ((-1., None), .1, {"unsupported_value": 0.}, {"a": .05, "b": .95}),
+    ((3., 1.), 0., {}, {"a": 1., "b": 0.}),
+    ((3., 3.), 0., {}, {"a": .5, "b": .5}),
+    ((3., 1.), 1., {}, {"a": .5, "b": .5}),
+])
+def test_action_probability_is_the_full_policy_mixture(outcomes, epsilon, settings, probabilities, forced_action):
+    parts = {option: partition([[1., 0.]], [outcome])
+             for option, outcome in zip(["a", "b"], outcomes) if outcome is not None}
+    service = OutcomeService(head_device="cpu")
+    handle = service.register_store(FaissOutcomeAdapter(parts, tag=TAG))
+    rng = SimpleNamespace(random=lambda: 0., integers=lambda n: forced_action,
+                          choice=lambda candidates: forced_action if isinstance(candidates, int) else candidates[0])
+    answer = service.decide_batch([state()], question(handle, **settings), epsilon=[epsilon],
+                                  rng=rng)["results"][0]["answers"]["q"]
+    assert answer["action_probability"] == pytest.approx(probabilities[answer["action"]])
+    assert answer["probabilities"] is None and answer["confidence"] is None
+    assert answer["calibrated"] is False
+
+
 def test_exact_key_override_is_opt_in_and_does_not_change_default_knn_mean():
     parts = {"a": partition([[1, 0], [1, .1]], [2, 4])}
     parts["a"]["exact_positions"] = {hashlib.sha256(np.asarray([1, 0], np.float16).tobytes()).digest(): 0}
@@ -113,10 +138,12 @@ def test_public_http_outcome_and_binary_uint8_batch(tmp_path):
         response = client.post("/decide-batch", json={"states": [state()], "questions": question(handle)})
         assert response.status_code == 200, response.text
         assert response.json()["results"][0]["answers"]["q"]["answer"] == "a"
+        assert response.json()["results"][0]["answers"]["q"]["action_probability"] == 1.
         response = client.post("/api/alpha/decisions", json={
             "model": "venn-1", "state": state(), "questions": question(handle)})
         assert response.status_code == 200, response.text
         assert response.json()["venn"]["vector_tag"] == TAG.to_dict()
+        assert response.json()["answers"]["q"]["action_probability"] == 1.
         wrong = {**state(), "tag": {**state()["tag"], "revision": "0" * 40}}
         response = client.post("/decide-batch", json={"states": [wrong], "questions": question(handle)})
         assert response.status_code in (400, 422), response.text

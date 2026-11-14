@@ -150,7 +150,8 @@ class OutcomeService:
         ``states`` is a uint8 RGB image batch or a list of ``{"vector", "tag"}`` dicts; ``representation`` applies
         only to uint8 image batches, tagged vector states carry their own tag. Each answer reports per-option
         outcome statistics, the best supported option (or "none") and an ``action`` that explores with
-        probability ``epsilon[row]``. Raises ``ValueError`` for invalid input.
+        probability ``epsilon[row]``. ``action_probability`` is that action's full epsilon-greedy
+        propensity, including tie-breaking and fallback. Raises ``ValueError`` for invalid input.
         """
         if not isinstance(questions, dict) or not 1 <= len(questions) <= 32:
             raise ValueError("Provide 1..32 named nearest_outcome questions")
@@ -259,15 +260,18 @@ class OutcomeService:
                 # The optional app policy preserves a utility prior for unseen options,
                 # without presenting that prior as a measured outcome.
                 scores = np.asarray([sign * utility if utility is not None else -np.inf for utility in utilities])
+                greedy = np.flatnonzero(scores == scores.max()) if np.isfinite(scores).any() else np.arange(len(options))
                 explore = bool(rng.random() < epsilon[row])
                 if explore:
                     action = int(rng.integers(len(options)))
                 elif np.isfinite(scores).any():
-                    action = int(rng.choice(np.flatnonzero(scores == scores.max())))
+                    action = int(rng.choice(greedy))
                 else:
                     action = int(rng.choice(len(options)))
                 result["answers"][name] = {
                     "answer": answer, "action": options[action], "options": stats,
+                    "action_probability": float(epsilon[row] / len(options)
+                                                + ((1 - epsilon[row]) / len(greedy) if action in greedy else 0)),
                     "probabilities": None, "confidence": None, "calibrated": False,
                     "goal": goal, "exploratory": explore or not stats[options[action]]["supported"],
                     "read_after_write": adapter.read_after_write,
@@ -290,10 +294,13 @@ class OutcomeService:
         for row, result in enumerate(results):
             preference = scores[row]
             best = int(np.argmax(preference))
+            greedy = np.flatnonzero(preference == preference.max())
             explore = bool(rng.random() < epsilon[row])
-            action = int(rng.integers(len(options))) if explore else int(rng.choice(np.flatnonzero(preference == preference.max())))
+            action = int(rng.integers(len(options))) if explore else int(rng.choice(greedy))
             result["answers"][name] = {
                 "answer": options[best], "action": options[action], "options": None,
+                "action_probability": float(epsilon[row] / len(options)
+                                            + ((1 - epsilon[row]) / len(greedy) if action in greedy else 0)),
                 "family": question["family"], "objective": family["objective"], "head": [float(v) for v in preference],
                 "probabilities": None, "confidence": None, "calibrated": False,
                 "goal": family["goal"], "exploratory": explore, "read_after_write": None, "distance": None,
