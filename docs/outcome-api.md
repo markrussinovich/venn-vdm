@@ -274,6 +274,34 @@ thread-safety guarantee, access control, encryption or authenticity signature.
 The caller owns retention, external storage and secret redaction. Hash integrity
 does not validate reward truth, decision quality or causal correctness.
 
+**Optional external-reference projection.** `venn.trasgo_history` provides
+`project_history(history, head)` and `resolve_history(packet, history)`. It is an
+experimental section-1-inspired JSON shape, not verified Trasgo conformance or a
+transport integration. Continuing the history example:
+
+```python
+import json
+from venn.trasgo_history import project_history, resolve_history
+
+packet = json.loads(json.dumps(project_history(history, proposal), allow_nan=False))
+assert resolve_history(packet, history) == history.lineage(proposal)
+```
+
+The packet contains exactly one declared head, its ordered root-to-head event
+IDs, a count/root summary and a SHA-256 fingerprint of the ordered references.
+It omits event payloads, outcomes and provenance content. Resolution checks the
+declared single head, integer format version/count, metadata, fingerprint and
+exact path against the external `EventHistory`, whose reads verify event bytes.
+Empty projections, missing events and mismatched or malformed packets raise
+`ValueError`; hypothetical events remain hypothetical after resolution.
+
+The reference fingerprint is not a signature or independent certification;
+anyone able to rewrite a packet can recompute it. Full reconstruction requires
+the complete external canonical event store. This is not standalone history,
+payload compression, a causal model or evidence of improved decision quality.
+Packet size grows with path length, and no compression or transport benefit has
+been measured. Neither helper changes service decisions or writes logs for you.
+
 The [arena example](arena-example.md) stores discounted returns per screen
 vector and action and uses `exact_match` and `unsupported_value` to reproduce
 an episodic-control convention. This is store-based learning with a frozen
