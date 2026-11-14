@@ -180,6 +180,30 @@ def test_family_validation_fails_closed():
         service.register_family("tiny", from_store=tiny, options=OPTIONS)
 
 
+@pytest.mark.parametrize("forced_action", [0, 1])
+@pytest.mark.parametrize("preference,epsilon,probabilities", [
+    ([3., 1.], .1, [.95, .05]),
+    ([3., 3.], .1, [.5, .5]),
+    ([3., 1.], 1., [.5, .5]),
+    ([3., 1.], 0., [1., 0.]),
+    ([3., 3.], 0., [.5, .5]),
+])
+def test_family_action_probability_includes_exploration_and_ties(monkeypatch, preference, epsilon, probabilities, forced_action):
+    from types import SimpleNamespace
+
+    service = OutcomeService(head_device="cpu")
+    service.families["policy"] = {"options": ["a", "b"], "tag": TAG.to_dict(),
+                                  "goal": "maximize", "objective": "bc"}
+    monkeypatch.setattr(service, "head_values", lambda name, vectors: np.asarray([preference]))
+    rng = SimpleNamespace(random=lambda: 0., integers=lambda n: forced_action,
+                          choice=lambda candidates: candidates[min(forced_action, len(candidates) - 1)])
+    states = [{"vector": np.ones(8), "tag": TAG.to_dict()}]
+    questions = {"q": {"type": "nearest_outcome", "family": "policy"}}
+    answer = service.decide_batch(states, questions, epsilon=[epsilon], rng=rng)["results"][0]["answers"]["q"]
+    assert answer["action_probability"] == pytest.approx(probabilities[["a", "b"].index(answer["action"])])
+    assert answer["probabilities"] is None and answer["confidence"] is None
+
+
 def test_bilinear_head_state_dict_layout_is_stable():
     head = BilinearHead(2304, 768, 16)
     assert sum(p.numel() for p in head.parameters()) == 49153
