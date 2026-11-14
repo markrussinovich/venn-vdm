@@ -225,6 +225,55 @@ For routing, an outcome could be a measured success or resolution time; define
 `goal` accordingly and evaluate feedback bias. A policy that observes only its
 chosen option cannot be compared as if it received every correct label.
 
+**Optional decision event history.** `venn.history.EventHistory` is a standalone,
+in-memory helper for retaining app-supplied events and exploring single-parent
+branches. It is not automatically attached to `OutcomeService` or HTTP routes.
+
+```python
+from venn.history import EventHistory
+
+history = EventHistory()
+provenance = {"source": "routing-app", "revision": "policy-v1"}
+decision = history.append(
+    branch="actual", kind="decision", payload={"action": "support"},
+    provenance=provenance, observed=True,
+)
+reward = history.append(
+    parent=decision, branch="actual", kind="reward", payload={"reward": 1.0},
+    provenance=provenance, observed=True,
+)
+proposal = history.append(
+    parent=decision, branch="candidate", kind="reward", payload={"reward": 2.0},
+    provenance=provenance, observed=False,
+)
+assert [event["id"] for event in history.lineage(reward)] == [decision, reward]
+assert [event["id"] for event in history.lineage(proposal)] == [decision, proposal]
+assert history.get(proposal)["observed"] is False
+```
+
+`append` returns the SHA-256 digest of this implementation's compact, sorted-key,
+UTF-8 JSON representation, including parent, branch, kind, payload, provenance
+and observation flag. This is not a cross-language canonical-JSON standard.
+Identical records deduplicate. Only native JSON values are accepted: dictionary
+keys must be strings, arrays must be lists, and numbers must be finite.
+The default encoded event limit is 65,536 bytes; `max_event_bytes` can be set
+between 1 and 1,048,576 bytes. This limits stored event size, not the memory used
+while serializing input. Nonempty branch/kind strings, boolean `observed` and
+nonempty provenance `source`/`revision` strings are required.
+
+An immediate parent must already exist and pass its hash check; `get` verifies
+the requested event, and `lineage` verifies every event on its root-to-head path.
+Reads return detached records. Unknown/invalid IDs, malformed event input,
+oversized events and hash mismatches raise `ValueError`. `lineage(None)` is
+the empty path. Branches are labels, not enforced named heads: the caller keeps
+track of heads, timestamps and any ordering beyond parent links.
+
+`observed=True` and provenance are caller assertions, not independently verified
+measurements or identity. The helper offers no persistence, import/export API,
+thread-safety guarantee, access control, encryption or authenticity signature.
+The caller owns retention, external storage and secret redaction. Hash integrity
+does not validate reward truth, decision quality or causal correctness.
+
 The [arena example](arena-example.md) stores discounted returns per screen
 vector and action and uses `exact_match` and `unsupported_value` to reproduce
 an episodic-control convention. This is store-based learning with a frozen
