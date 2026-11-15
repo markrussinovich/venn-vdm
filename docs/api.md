@@ -336,6 +336,11 @@ optionally `split` (`train`, `selection`, `report` row indices) and `cv`
 without criteria: `{"type": "score", "family": "wine_points"}` returns `score`,
 `interval`, `interval_level` (0.8), `calibrated` and `source: "family_head"`.
 
+Regression `cv` accepts only `folds` and `repeats`, both integer counts (not
+booleans). Defaults are 5 folds and 3 repeats. Folds must be between 2 and
+the actual train-slice row count; repeats must be positive. Invalid settings
+return 422 (`family_cv`) before fitting or persisting a family.
+
 Three options shape a regression family's inputs and head:
 - **`"form": "kernel_ridge"`** fits an RBF kernel ridge instead of the linear ridge. Alpha (0.01–10) and gamma
   (0.5–4) are chosen by the same cross-validation.

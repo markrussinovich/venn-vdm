@@ -522,6 +522,13 @@ class DecisionService:
         started = time.perf_counter()
         if not isinstance(family, str) or not 1 <= len(family) <= 128:
             raise ContractError("family_name", "Family name must contain 1..128 characters")
+        cv = {} if cv is None else cv
+        if not isinstance(cv, dict) or not set(cv) <= {"folds", "repeats"}:
+            raise ContractError("family_cv", "cv must map folds and repeats to integer counts")
+        try:
+            folds, repeats = regression.validate_cv(cv.get("folds", 5), cv.get("repeats", 3))
+        except ValueError as exc:
+            raise ContractError("family_cv", str(exc)) from exc
         from venn.reader import PROMPTS
         if form not in ("ridge", "kernel_ridge"):
             raise ContractError("family_form", "Regression families support form ridge or kernel_ridge")
@@ -591,16 +598,19 @@ class DecisionService:
                 raise ContractError("family_split", "Split must map train/selection/report to row indices")
             if any(len(p) and (p.min() < 0 or p.max() >= len(y)) for p in parts):
                 raise ContractError("family_split", "Split indices are out of range")
-        cv = cv or {}
         extended = form == "kernel_ridge" or bool(inputs)
         try:
+            if parts is None:
+                parts = regression.default_split(y, seed)
+            if folds > len(parts[0]):
+                raise ContractError("family_cv", "CV folds must not exceed the number of training rows")
             if extended:
                 extra = regression.input_features(texts, inputs) if inputs else None
                 head, report, parts = regression.register_extended(values, y, form=form, extra=extra, input_names=inputs, seed=seed, split=parts,
-                                                                   folds=int(cv.get("folds", 5)), repeats=int(cv.get("repeats", 3)), alphas=alphas)
+                                                                   folds=folds, repeats=repeats, alphas=alphas)
             else:
-                head, report, parts = regression.register(values, y, seed=seed, split=parts, folds=int(cv.get("folds", 5)),
-                                                          repeats=int(cv.get("repeats", 3)), alphas=tuple(alphas or regression.ALPHAS))
+                head, report, parts = regression.register(values, y, seed=seed, split=parts, folds=folds,
+                                                          repeats=repeats, alphas=tuple(alphas or regression.ALPHAS))
         except ValueError as exc:
             raise ContractError("family_examples", str(exc))
         report["seconds"] = time.perf_counter() - started

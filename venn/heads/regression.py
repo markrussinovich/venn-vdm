@@ -16,7 +16,17 @@ LEVEL = 0.80
 MIN_CALIBRATION_ITEMS = 500
 
 
+def validate_cv(folds, repeats, rows=None):
+    if (isinstance(folds, (bool, np.bool_)) or not isinstance(folds, (int, np.integer))
+            or folds < 2 or (rows is not None and folds > rows)):
+        raise ValueError("CV folds must be an integer from 2 to the number of training rows")
+    if isinstance(repeats, (bool, np.bool_)) or not isinstance(repeats, (int, np.integer)) or repeats < 1:
+        raise ValueError("CV repeats must be a positive integer")
+    return int(folds), int(repeats)
+
+
 def stratified_folds(target, k, seed):
+    k, _ = validate_cv(k, 1, len(target))
     rng = np.random.default_rng(seed)
     order = np.lexsort((rng.random(len(target)), target))
     return [np.sort(order[i::k]) for i in range(k)]
@@ -75,6 +85,7 @@ def choose_alpha(X, y, folds=5, repeats=3, alphas=ALPHAS):
     """
     X = np.asarray(X, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
+    folds, repeats = validate_cv(folds, repeats, len(y))
     oof = {alpha: np.zeros((repeats, len(y))) for alpha in alphas}
     for repeat in range(repeats):
         for fold in stratified_folds(y, folds, seed=repeat):
@@ -260,6 +271,7 @@ def _fit(form, X, y, alpha, gamma):
 
 def choose_extended(vectors, extra, y, form, folds=5, repeats=3, alphas=None, gammas=None, scales=None):
     """Joint choice of (input scale, alpha, gamma) by mean out-of-fold RMSE over repeats, the folds ``choose_alpha`` uses."""
+    folds, repeats = validate_cv(folds, repeats, len(y))
     alphas = tuple(alphas or (KERNEL_ALPHAS if form == "kernel_ridge" else ALPHAS))
     gammas = tuple(gammas or GAMMAS) if form == "kernel_ridge" else (None,)
     scales = tuple(scales or INPUT_SCALES) if extra is not None else (None,)

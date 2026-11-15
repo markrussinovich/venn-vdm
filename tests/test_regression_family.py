@@ -38,6 +38,56 @@ def examples(X, y):
     return [{"state": {"vector": x.tolist()}, "points": float(v)} for x, v in zip(X, y)]
 
 
+@pytest.mark.parametrize("form", ["ridge", "kernel_ridge"])
+@pytest.mark.parametrize("cv", [
+    {"folds": 0, "repeats": 1}, "bad", [],
+    {"folds": 2.5, "repeats": 1},
+    {"folds": 3, "repeats": True},
+    {"folds": 3, "repeats": 0},
+    {"folds": 19, "repeats": 1},
+    {"folds": 3, "repeats": 1, "max_epochs": 1},
+])
+def test_regression_http_rejects_invalid_cv_without_registering(tmp_path, form, cv):
+    X, y = data(30)
+    service = service_for(tmp_path)
+    with TestClient(create_app(service), base_url="http://127.0.0.1",
+                    raise_server_exceptions=False) as client:
+        response = client.put("/families/bad", json={
+            "objective": "regress", "form": form, "target": "points",
+            "examples": examples(X, y), "cv": cv,
+        })
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "family_cv"
+    assert "bad" not in service.families
+    assert not list(service.family_store.glob("*.npz"))
+
+
+@pytest.mark.parametrize("extended", [False, True])
+@pytest.mark.parametrize("folds,repeats", [(0, 1), (1, 1), (11, 1), (2.5, 1), (2, 0), (2, True)])
+def test_regression_cv_helpers_reject_degenerate_settings(extended, folds, repeats):
+    X = np.arange(40, dtype=float).reshape(10, 4)
+    y = np.arange(10, dtype=float)
+    with pytest.raises(ValueError, match="CV"):
+        if extended:
+            regression.choose_extended(X, None, y, "kernel_ridge", folds=folds,
+                                       repeats=repeats, alphas=(1.,), gammas=(1.,))
+        else:
+            regression.choose_alpha(X, y, folds=folds, repeats=repeats, alphas=(1.,))
+
+
+def test_regression_cv_fold_limit_uses_the_actual_train_slice(tmp_path):
+    X, y = data(30)
+    service = service_for(tmp_path)
+    kwargs = {"objective": "regress", "target": "points",
+              "split": {"train": list(range(10)), "report": list(range(10, 30))}}
+    with pytest.raises(ContractError, match="training rows") as error:
+        service.register_family("bad", examples(X, y), cv={"folds": 11, "repeats": 1}, **kwargs)
+    assert error.value.code == "family_cv"
+    report = service.register_family("valid", examples(X, y), cv={"folds": 10, "repeats": 1}, **kwargs)
+    assert report["cv"]["folds"] == report["slices"]["train"] == 10
+    assert all(np.isfinite(value) for value in report["cv_rmse_by_alpha"].values())
+
+
 def test_register_answer_batch_and_decisions_shape(tmp_path):
     X, y = data()
     service = service_for(tmp_path)
