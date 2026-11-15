@@ -876,6 +876,19 @@ class DecisionService:
         self.questions[handle] = definition, prepared, labels, q
         return handle
 
+    def _resolve_question_ref(self, question):
+        """Resolve a handle, permitting only its original type and per-request limits."""
+        if "question_ref" not in question:
+            return question
+        handle = question["question_ref"]
+        if not isinstance(handle, str) or handle not in self.questions:
+            raise ContractError("question_handle", "Missing or stale question handle", 404)
+        definition = self.questions[handle][0]
+        if (set(question) - {"question_ref", "type", "threshold", "row_cap", "batch_size"}
+                or question.get("type", definition.get("type", "Choice")) != definition.get("type", "Choice")):
+            raise ContractError("prewarm_override", "Re-register changed type, options, instructions or family")
+        return {**definition, **question}
+
     def stream_index(self, handle, question):
         """Return a generator of NDJSON lines applying ``question`` to every row of the index ``handle``.
 
@@ -883,11 +896,7 @@ class DecisionService:
         ``threshold``. Raises ``ContractError`` for bad limits or handles.
         """
         index = self.index(handle)
-        if "question_ref" in question:
-            ref = question["question_ref"]
-            if ref not in self.questions:
-                raise ContractError("question_handle", "Missing question handle", 404)
-            question = {**self.questions[ref][0], **question}
+        question = self._resolve_question_ref(question)
         cap, batch = question.get("row_cap", len(index["vectors"])), question.get("batch_size", 65536)
         if type(cap) is not int or not 0 <= cap <= 1000000 or type(batch) is not int or not 1 <= batch <= 65536:
             raise ContractError("stream_limit", "Invalid row cap or batch size")
@@ -958,14 +967,10 @@ class DecisionService:
         for name, question in request["questions"].items():
             if not isinstance(question, dict):
                 raise ContractError("question_shape", "Each question must be an object")
-            if "question_ref" in question:
-                handle = question["question_ref"]
-                if handle not in self.questions:
-                    raise ContractError("question_handle", "Missing or stale question handle", 404)
-                if set(question) - {"question_ref", "threshold", "row_cap", "batch_size"}:
-                    raise ContractError("prewarm_override", "Re-register changed options or instructions")
-                question = {**self.questions[handle][0], **question}
+            question = self._resolve_question_ref(question)
             if "family" not in question and request.get("family"):
+                if "question_ref" in question:
+                    raise ContractError("prewarm_override", "Re-register changed family")
                 question = {**question, "family": request["family"]}
             kind = question.get("type", "Choice")
             threshold = question.get("threshold")

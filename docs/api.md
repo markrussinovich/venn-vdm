@@ -251,10 +251,13 @@ NDJSON. The sequence is:
 Indexes and prewarmed questions live in server memory and do not survive a
 restart. Re-register from the authoritative store. `POST /questions/{name}`
 prepares an `index_apply` question once and returns a `question_ref` to reuse
-across streams: send `{"type": "index_apply", "question_ref": "..."}` (with
-`batch_size` if needed) in place of the instructions and options. Changing its
-options or instructions requires re-registration. Above 512 output rows, use
-NDJSON rather than the bounded Decisions response.
+in bounded Decisions requests or across streams: send
+`{"type": "index_apply", "question_ref": "..."}` in place of the instructions
+and options. `threshold`, `row_cap` and `batch_size` may change per request;
+the type must stay `index_apply`. Changing its options, instructions or family
+requires re-registration; both routes reject such overrides with 422
+(`prewarm_override`). Above 512 output rows, use NDJSON rather than the bounded
+Decisions response.
 
 For Python callers scoring several Choice questions over the same vectors,
 `venn.index.apply.PreparedQuestionBatch` is an opt-in helper:

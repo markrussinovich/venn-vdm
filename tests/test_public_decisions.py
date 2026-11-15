@@ -1,4 +1,5 @@
 import hashlib
+import json
 import sqlite3
 
 import numpy as np
@@ -56,6 +57,96 @@ def client(tmp_path):
                               registry_path=tmp_path / "registry.json")
     with TestClient(create_app(service), base_url="http://127.0.0.1") as value:
         yield value
+
+
+@pytest.fixture
+def prewarmed_index(client):
+    vectors = np.eye(3, 768).tolist()
+    definition = {"type": "index_apply", "instructions_vec": vectors[0],
+                  "options": [{"label": str(i), "vector": row} for i, row in enumerate(vectors)]}
+    ref = client.post("/questions/check", json=definition).json()["question_ref"]
+    index = client.post("/indexes", json={"vectors": {"vectors": vectors},
+                                          "ids": ["a", "b", "c"]}).json()["index_ref"]
+    return ref, index, definition, vectors
+
+
+@pytest.mark.parametrize("cap,batch", [(1, 1), (3, 2)])
+def test_prewarmed_question_matches_direct_bounded_and_streamed_answers(client, prewarmed_index, cap, batch):
+    ref, index, definition, _ = prewarmed_index
+    limits = {"row_cap": cap, "batch_size": batch, "threshold": .75}
+    body = {"model": "venn-1", "state": {"index_ref": index},
+            "questions": {"q": {**definition, **limits}}}
+    direct = client.post("/api/alpha/decisions", json=body).json()["answers"]["q"]["rows"]
+    question = {"type": "index_apply", "question_ref": ref, **limits}
+    body["questions"]["q"] = question
+    bounded = client.post("/api/alpha/decisions", json=body)
+    assert bounded.status_code == 200
+    streamed = client.post(f"/index-apply/{index}", json=question)
+    assert streamed.status_code == 200
+    rows = [row for line in streamed.text.splitlines() for row in json.loads(line)["rows"]]
+    assert bounded.json()["answers"]["q"]["rows"] == rows == direct
+    assert [row["id"] for row in rows] == ["a", "b", "c"][:cap]
+
+
+@pytest.mark.parametrize("override", [{"options": []}, {"instructions_vec": []}, {"family": "changed"}])
+def test_prewarmed_question_rejects_semantic_overrides_on_both_routes(client, prewarmed_index, override):
+    ref, index, _, _ = prewarmed_index
+    question = {"type": "index_apply", "question_ref": ref, **override}
+    body = {"model": "venn-1", "state": {"index_ref": index}, "questions": {"q": question}}
+    for response in (client.post("/api/alpha/decisions", json=body),
+                     client.post(f"/index-apply/{index}", json=question)):
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "prewarm_override"
+
+
+@pytest.mark.parametrize("kind", ["Choice", "Score", "Noul"])
+def test_native_prewarmed_index_question_rejects_changed_type(client, prewarmed_index, kind):
+    from venn.errors import ContractError
+
+    ref, index, _, _ = prewarmed_index
+    question = {"type": kind, "question_ref": ref}
+    service = client.app.state.service
+    with pytest.raises(ContractError) as bounded:
+        service.decide({"state": {"index_ref": index}, "questions": {"q": question}})
+    with pytest.raises(ContractError) as streamed:
+        list(service.stream_index(index, question))
+    assert bounded.value.code == streamed.value.code == "prewarm_override"
+
+
+@pytest.mark.parametrize("kind", [None, "Choice", "Score", "Noul"])
+def test_native_prewarmed_question_accepts_matching_declared_or_default_type(client, prewarmed_index, kind):
+    _, _, definition, vectors = prewarmed_index
+    definition = {key: value for key, value in definition.items() if key != "type"}
+    if kind is not None:
+        definition["type"] = kind
+    service = client.app.state.service
+    ref = service.register_question("single", definition)
+    body = {"state": {"vector": vectors[0]}, "questions": {"q": definition}}
+    direct = service.decide(body)["answers"]
+    body["questions"]["q"] = {"type": kind or "Choice", "question_ref": ref}
+    assert service.decide(body)["answers"] == direct
+
+
+def test_prewarmed_question_cannot_inherit_a_different_request_family(client, prewarmed_index):
+    from venn.errors import ContractError
+
+    ref, index, _, _ = prewarmed_index
+    with pytest.raises(ContractError) as error:
+        client.app.state.service.decide({
+            "family": "changed", "state": {"index_ref": index},
+            "questions": {"q": {"question_ref": ref}},
+        })
+    assert error.value.code == "prewarm_override"
+
+
+def test_prewarmed_question_rejects_unhashable_handle_on_both_routes(client, prewarmed_index):
+    _, index, _, _ = prewarmed_index
+    question = {"type": "index_apply", "question_ref": []}
+    body = {"model": "venn-1", "state": {"index_ref": index}, "questions": {"q": question}}
+    for response in (client.post("/api/alpha/decisions", json=body),
+                     client.post(f"/index-apply/{index}", json=question)):
+        assert response.status_code == 404
+        assert response.json()["error"]["code"] == "question_handle"
 
 
 def test_public_fake_cache_contract_and_replay(client):
