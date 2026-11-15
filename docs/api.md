@@ -155,6 +155,10 @@ Venn extensions:
 Use explicit `{"vector": [...]}`, `{"vectors": [...]}` or
 `{"index_ref": "..."}` state for geometry.
 
+For `population_shift`, `bandwidth` defaults to 1 and must be a finite,
+positive number. Invalid bandwidths or nonfinite kernels return 422
+(`population_input`), not a significance result.
+
 **Many items in one request:** each single-item state has a plural form, embedded in bulk:
 
 | One item | Many items, up to 512 |

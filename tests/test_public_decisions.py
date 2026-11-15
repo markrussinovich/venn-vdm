@@ -92,6 +92,48 @@ def test_public_experimental_and_model_gates(client):
     assert response.json()["error"]["code"] == "media_parts_unsupported"
 
 
+@pytest.mark.parametrize("bandwidth", [1e-200, 1e200])
+def test_population_shift_extreme_bandwidths_do_not_invent_significance(bandwidth):
+    from venn.index.shift import population_shift, rbf_gram
+
+    vectors = np.eye(2)
+    with np.errstate(all="raise"):
+        kernel = rbf_gram(vectors, bandwidth)
+        result = population_shift(vectors, vectors, bandwidth, permutations=19)
+    np.testing.assert_array_equal(np.diag(kernel), np.ones(2))
+    assert kernel[0, 1] == (0. if bandwidth < 1 else 1.)
+    assert result["shifted"] is False
+    assert result["p_value"] == 1.
+    assert result["effect_size"] == 0.
+
+
+@pytest.mark.parametrize("bandwidth", [float("nan"), float("inf"), True, "bad"])
+def test_population_shift_rejects_invalid_bandwidths(bandwidth):
+    from venn.index.shift import population_shift
+
+    with pytest.raises(ValueError):
+        population_shift(np.eye(2), np.eye(2), bandwidth, permutations=19)
+
+
+def test_population_shift_rejects_unrepresentable_kernel():
+    from venn.index.shift import population_shift
+
+    with pytest.raises(ValueError, match="finite"):
+        population_shift(np.full((2, 2), 1e200), np.eye(2), 1., permutations=19)
+
+
+@pytest.mark.parametrize("bandwidth", [0, True, "bad"])
+def test_population_shift_http_reports_bandwidth_validation_errors(client, bandwidth):
+    vectors = np.eye(2, 768).tolist()
+    response = client.post("/api/alpha/decisions", json={
+        "model": "venn-1", "state": {"vectors": vectors},
+        "questions": {"q": {"type": "population_shift", "batch_b": {"vectors": vectors},
+                            "bandwidth": bandwidth}},
+    })
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "population_input"
+
+
 def test_native_text_wrappers_and_json_content_keep_their_meaning(client):
     question = {"q": {"type": "noul", "instructions": "Is this broken?"}}
     body = {"model": "venn-1", "state": "Cannot log in", "questions": question}

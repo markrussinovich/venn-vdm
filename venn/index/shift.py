@@ -4,13 +4,27 @@ import numpy as np
 
 
 def rbf_gram(vectors, bandwidth):
-    """Return the Gaussian (RBF) kernel matrix of ``vectors``; raises ``ValueError`` if ``bandwidth`` is not positive."""
-    if bandwidth <= 0:
-        raise ValueError("Bandwidth must be positive")
+    """Return the RBF kernel; require a finite positive bandwidth and a finite float64 kernel."""
+    if isinstance(bandwidth, (bool, np.bool_)) or not isinstance(
+            bandwidth, (int, float, np.integer, np.floating)):
+        raise ValueError("Bandwidth must be a finite positive number")
+    try:
+        bandwidth = float(bandwidth)
+    except OverflowError as exc:
+        raise ValueError("Bandwidth must be a finite positive number") from exc
+    if not np.isfinite(bandwidth) or bandwidth <= 0:
+        raise ValueError("Bandwidth must be a finite positive number")
     values = np.asarray(vectors, dtype=np.float64)
-    norms = np.sum(values * values, axis=1)
-    distances = np.maximum(norms[:, None] + norms[None] - 2 * values @ values.T, 0)
-    return np.exp(-distances / (2 * bandwidth ** 2))
+    if values.ndim != 2:
+        raise ValueError("Vectors must be a matrix")
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        norms = np.sum(values * values, axis=1)
+        distances = np.maximum(norms[:, None] + norms[None] - 2 * values @ values.T, 0)
+        # Divide twice so squaring a valid bandwidth cannot underflow or overflow.
+        kernel = np.exp(-0.5 * (distances / bandwidth) / bandwidth)
+    if not np.isfinite(kernel).all():
+        raise ValueError("RBF kernel must be finite; vector distances exceed float64 range")
+    return kernel
 
 
 def population_shift(a, b, bandwidth, permutations=199, seed=42, alpha=0.05):

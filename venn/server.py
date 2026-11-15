@@ -990,7 +990,10 @@ class DecisionService:
                 other = self.vector(question["batch_b"], revision)
                 if values.ndim != 2 or other.ndim != 2 or min(len(values), len(other)) < 2:
                     raise ContractError("population_input", "Provide two populations")
-                result = population_shift(values, other, bandwidth=question.get("bandwidth", 1), permutations=200)
+                try:
+                    result = population_shift(values, other, bandwidth=question.get("bandwidth", 1), permutations=200)
+                except ValueError as exc:
+                    raise ContractError("population_input", str(exc)) from exc
                 answers[name] = {**result, "answer": result["shifted"], "probabilities": None,
                                  "confidence": None, "calibrated": False, "p_value_is_posterior": False}
                 continue
