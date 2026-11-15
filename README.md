@@ -81,8 +81,10 @@ accepts explicitly tagged vectors from other readers; see
 - **Decide from recorded outcomes.** Point Venn at your own vector store of past
   cases and their outcomes. It picks the option whose similar past cases went
   best, and your application writes new outcomes back. No trained head is needed.
-- **Train custom heads through the same API.** Four kinds, all through
-  `register_family` (or `PUT /families/{name}` over HTTP):
+- **Train custom heads.** Choice and numeric heads use
+  `DecisionService.register_family` (or `PUT /families/{name}` over HTTP).
+  Outcome-store heads use Python `OutcomeService.register_family`; there is
+  no HTTP compilation route. Four kinds:
   - a linear Choice head (`form="linear"`), a multinomial logistic regression on
     your labeled vectors and the best default for plain classification;
   - the residual Choice head, which can also answer "none of these";

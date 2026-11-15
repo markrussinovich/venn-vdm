@@ -369,8 +369,10 @@ cancellation ranges raise `ValueError` instead of returning silent zeros or infi
 
 ## Compile the store into a head
 
-`register_family` trains a small head from every case the store exports and
-registers it under a name. A `nearest_outcome` question that names that
+Python `OutcomeService.register_family` trains a small head from every case
+the store exports and registers it under a name. There is no HTTP compilation
+route: `PUT /families/{name}` trains Choice and numeric families, not
+outcome-store heads. A `nearest_outcome` question that names that
 `family` is then answered by the head alone: no lookup, no evidence, the same
 answer shape otherwise.
 
