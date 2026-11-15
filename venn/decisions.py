@@ -50,17 +50,17 @@ def text(value):
 
 
 def validate_media(state, experimental_media):
-    """Return ``True`` when ``state`` carries raw ``image`` or ``audio`` media.
+    """Return ``True`` when ``state`` carries raw image/audio media, singular or plural.
 
     Raises ``ContractError`` if media is present without the ``experimental_media`` opt-in, or if typed
     media parts are used instead of one raw payload.
     """
     parts = typed_media(state)
-    media = parts or isinstance(state, dict) and any(key in state for key in ("image", "audio"))
+    media = parts or isinstance(state, dict) and any(key in state for key in ("image", "images", "audio", "audios"))
     if media and not experimental_media:
         raise ContractError("experimental_media", "Set X-Venn-Experimental: media to opt in", 400)
     if parts:
-        raise ContractError("media_parts_unsupported", "Use a single raw image/audio state, not typed media parts", 400)
+        raise ContractError("media_parts_unsupported", "Use raw image/audio states, not typed media parts", 400)
     return media
 
 
@@ -146,7 +146,7 @@ def decide(service, request, experimental_media=False):
         raise ContractError("assets_unsupported", "Referenced image assets are not supported", 400)
     media = validate_media(state, experimental_media)
     native_state = state if isinstance(state, dict) and any(
-        key in state for key in ("text", "texts", "vector", "vectors", "index_ref", "image", "audio")
+        key in state for key in ("text", "texts", "vector", "vectors", "index_ref", "image", "images", "audio", "audios")
     ) else text(state)
     if isinstance(native_state, dict) and (
         native_state.get("profile", MODEL) != MODEL or

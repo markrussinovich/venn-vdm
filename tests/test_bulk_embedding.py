@@ -4,9 +4,11 @@ import io
 
 import numpy as np
 import pytest
+from fastapi.testclient import TestClient
 from PIL import Image
 
 from test_adapters_mcp import fake_assets
+from venn import create_app
 from venn.errors import ContractError
 from venn.server import DecisionService
 
@@ -104,3 +106,39 @@ def test_plural_states_answer_index_apply_and_name_the_type_otherwise(tmp_path):
     for kind in ("Choice", "Noul"):
         with pytest.raises(ContractError, match=f"{kind} answers one item; ask an IndexApply"):
             service.decide({"state": {"texts": ["x", "y"]}, "questions": {"q": {"type": kind, "options": options}}})
+
+
+@pytest.mark.parametrize("plural,kind", [("images", "image"), ("audios", "audio")])
+def test_decisions_plural_media_preserves_modality_and_requires_opt_in(tmp_path, monkeypatch, plural, kind):
+    service = service_for(tmp_path)
+    calls = []
+
+    def embed_media(payloads, kind="image"):
+        calls.append((kind, payloads))
+        return np.eye(len(payloads), 768, dtype=np.float32)
+
+    monkeypatch.setattr(service, "embed_media", embed_media)
+    request = {
+        "model": "venn-1", "state": {plural: ["first", "second"]},
+        "questions": {"q": {"type": "index_apply", "options": [{"label": "a"}, {"label": "b"}]}},
+    }
+    with TestClient(create_app(service), base_url="http://127.0.0.1") as client:
+        response = client.post("/api/alpha/decisions", json=request)
+        assert response.status_code == 400
+        assert response.json()["error"]["code"] == "experimental_media"
+        assert calls == []
+
+        response = client.post("/api/alpha/decisions", json=request, headers={"X-Venn-Experimental": "media"})
+        assert response.status_code == 200
+        result = response.json()
+        assert [row["id"] for row in result["answers"]["q"]["rows"]] == [0, 1]
+        assert result["venn"]["experimental_media"] is True
+        assert result["venn"]["vector_tag"]["representation"] == kind + "-default"
+        assert calls == [(kind, ["first", "second"])]
+
+        request["questions"] = {
+            "q": {"type": "choice", "instructions": "Classify", "criteria": {"a": "A", "b": "B"}},
+        }
+        response = client.post("/api/alpha/decisions", json=request, headers={"X-Venn-Experimental": "media"})
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "unsupported_input"
