@@ -150,6 +150,38 @@ def test_register_family_answers_without_a_lookup_and_round_trips(tmp_path, obje
     assert again["report"]["warm_start"] is True
 
 
+@pytest.mark.parametrize("objective", ["bc", "awr"])
+def test_muon_family_registration_serving_and_round_trip(tmp_path, monkeypatch, objective):
+    adapter, centres = toy_store(np.random.default_rng(31))
+    service = OutcomeService(head_device="cpu")
+    store = service.register_store(adapter)
+    summary = service.register_family(
+        "muon-policy", from_store=store, options=OPTIONS, objective=objective, rank=2,
+        fit={"optimizer": "muon", "muon_lr": .01, "lr": .001, "max_epochs": 2, "batch": 128},
+    )
+    assert summary["report"]["hyperparameters"]["optimizer"] == "muon"
+    scores = service.head_values("muon-policy", centres)
+    assert np.isfinite(scores).all()
+
+    def no_lookup(*args, **kwargs):
+        pytest.fail("A compiled family must serve without a store lookup")
+
+    monkeypatch.setattr(adapter, "search", no_lookup)
+    states = [{"vector": vector, "tag": TAG.to_dict()} for vector in centres]
+    response = service.decide_batch(
+        states, {"q": {"type": "nearest_outcome", "family": "muon-policy"}},
+    )
+    assert all(result["answers"]["q"]["family"] == "muon-policy"
+               for result in response["results"])
+
+    path = tmp_path / "muon-policy.pt"
+    sha = service.save_family("muon-policy", path)
+    fresh = OutcomeService(head_device="cpu")
+    assert fresh.load_family("muon-policy", path) == sha
+    np.testing.assert_array_equal(fresh.head_values("muon-policy", centres), scores)
+    assert fresh.families["muon-policy"]["report"] == summary["report"]
+
+
 def test_family_validation_fails_closed():
     rng = np.random.default_rng(2)
     adapter, centres = toy_store(rng)

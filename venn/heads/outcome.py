@@ -21,6 +21,8 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from venn.heads.optimizers import build_outcome_optimizers
+
 CHUNK = 64  # insertion-order cases per split unit, so neighbouring cases share a slice
 OBJECTIVES = ("bc", "awr")
 MINIMUM_CASES = 5 * CHUNK
@@ -131,7 +133,8 @@ def advantage_weights(outcomes, baseline, train_mask, clip=20., *, goal="maximiz
 
 
 def fit_outcome_head(records, labels, option_vectors, *, weights=None, device="cpu", seed=0, rank=16,
-                     max_epochs=20, patience=3, batch=4096, lr=1e-3, weight_decay=0.01, warm_start=None):
+                     max_epochs=20, patience=3, batch=4096, lr=1e-3, weight_decay=0.01, warm_start=None,
+                     optimizer="adamw", muon_lr=None):
     """Fit a bilinear head by (weighted) cross-entropy on ``labels``; early stopping on the held-out slice.
 
     Returns ``(head, report)``. The head keeps the weights of the best early-stop epoch.
@@ -149,7 +152,8 @@ def fit_outcome_head(records, labels, option_vectors, *, weights=None, device="c
     head = BilinearHead(x.shape[1], options.shape[1], rank).to(device)
     if warm_start is not None:
         head.load_state_dict(warm_start)
-    optimizer = torch.optim.AdamW(head.parameters(), lr=lr, weight_decay=weight_decay)
+    optimizers = build_outcome_optimizers(head, optimizer=optimizer, lr=lr,
+                                          weight_decay=weight_decay, muon_lr=muon_lr)
     slices = {s: torch.nonzero(split == s).squeeze(1) for s in range(3)}
 
     def batch_loss(rows, reduce):
@@ -173,9 +177,11 @@ def fit_outcome_head(records, labels, option_vectors, *, weights=None, device="c
         order = slices[0][torch.randperm(len(slices[0]), generator=generator).to(device)]
         for begin in range(0, len(order), batch):
             loss, _ = batch_loss(order[begin:begin + batch], "mean")
-            optimizer.zero_grad(set_to_none=True)
+            for opt in optimizers:
+                opt.zero_grad(set_to_none=True)
             loss.backward()
-            optimizer.step()
+            for opt in optimizers:
+                opt.step()
         head.eval()
         with torch.inference_mode():
             early = mean_loss(slices[1])
@@ -201,12 +207,15 @@ def fit_outcome_head(records, labels, option_vectors, *, weights=None, device="c
             agree_action += int((guess == action[rows]).sum())
         losses["report_agreement_with_labels"] = agree_label / max(1, len(report_rows))
         losses["report_agreement_with_stored_option"] = agree_action / max(1, len(report_rows))
+    hyperparameters = {"max_epochs": max_epochs, "patience": patience, "batch": batch, "lr": lr,
+                       "weight_decay": weight_decay}
+    if optimizer == "muon":
+        hyperparameters.update({"optimizer": "muon", "muon_lr": lr if muon_lr is None else muon_lr})
     return head, {"parameters": count_parameters(head), "rank": rank, "epochs": epochs, "early_stop_history": history,
                   "losses": losses, "weighted": weights is not None, "warm_start": warm_start is not None,
                   "records": {"total": int(len(x)), "train": int(len(slices[0])), "early_stop": int(len(slices[1])),
                               "report": int(len(slices[2]))},
-                  "hyperparameters": {"max_epochs": max_epochs, "patience": patience, "batch": batch, "lr": lr,
-                                      "weight_decay": weight_decay},
+                  "hyperparameters": hyperparameters,
                   "seconds": time.perf_counter() - started}
 
 
